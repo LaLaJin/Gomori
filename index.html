@@ -1,0 +1,75 @@
+<title>Gomori</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@700&family=IBM+Plex+Sans+KR:wght@400;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+  /* Layout: single centered column, one status card, one tap-test widget */
+  :root {
+    --bg: #f3f5f2;
+    --surface: #ffffff;
+    --fg: #1d2420;
+    --muted: #5d6a63;
+    --line: #d8dfda;
+    --accent: #2f6f55;
+    --font-display: "Gowun Batang", "Apple SD Gothic Neo", serif;
+    --font-body: "IBM Plex Sans KR", "Apple SD Gothic Neo", system-ui, sans-serif;
+    --font-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #141916; --surface: #1c231f; --fg: #e6ece8; --muted: #9aa8a0; --line: #2d3832; --accent: #7cc4a3;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #141916; --surface: #1c231f; --fg: #e6ece8; --muted: #9aa8a0; --line: #2d3832; --accent: #7cc4a3;
+    color-scheme: dark;
+  }
+  body { background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.6; }
+  main { max-width: 36rem; margin: 0 auto; padding: 0 16px; padding-block: 3rem 4rem; display: grid; gap: 2rem; }
+  h1 { font-family: var(--font-display); font-size: 2.6rem; line-height: 1.15; margin: 0; text-wrap: balance; }
+  .lede { color: var(--muted); margin: 0.5rem 0 0; }
+  .status { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem; display: grid; gap: 0.75rem; }
+  .row { display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+  .label { font-size: 0.8rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+  .mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+  .dot { display: inline-block; width: 0.55rem; height: 0.55rem; border-radius: 50%; background: var(--accent); margin-right: 0.4rem; }
+  h2 { font-size: 1.05rem; margin: 0 0 0.5rem; }
+  ol { margin: 0; padding-left: 1.2rem; display: grid; gap: 0.35rem; }
+  button { font: inherit; font-weight: 600; color: var(--bg); background: var(--accent); border: 0; border-radius: 8px; padding: 0.7rem 1.2rem; cursor: pointer; }
+  button:focus-visible { outline: 3px solid var(--fg); outline-offset: 2px; }
+  .tap { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+</style>
+
+<main>
+  <header>
+    <h1>Gomori</h1>
+    <p class="lede">클라우드에서 수정한 내용이 이 링크에 바로 반영되는지 확인하는 첫 페이지입니다.</p>
+  </header>
+
+  <section class="status" aria-label="미리보기 상태">
+    <div class="row"><span class="label">상태</span><span><span class="dot"></span>미리보기 연결됨</span></div>
+    <div class="row"><span class="label">버전</span><span class="mono">v0.1</span></div>
+    <div class="row"><span class="label">원본 파일</span><span class="mono">index.html</span></div>
+  </section>
+
+  <section>
+    <h2>작업 흐름</h2>
+    <ol>
+      <li>Claude에게 바꿀 내용을 말합니다.</li>
+      <li>Claude가 파일을 고치고 같은 링크로 다시 게시합니다.</li>
+      <li>사파리에서 이 페이지를 새로고침하면 반영됩니다.</li>
+    </ol>
+  </section>
+
+  <section class="tap">
+    <button id="tap-btn" type="button">눌러보기</button>
+    <span>탭 횟수 <strong id="tap-count" class="mono">0</strong></span>
+  </section>
+</main>
+
+<script>
+  const btn = document.getElementById("tap-btn");
+  const out = document.getElementById("tap-count");
+  let n = 0;
+  btn.addEventListener("click", () => { out.textContent = ++n; });
+</script>
