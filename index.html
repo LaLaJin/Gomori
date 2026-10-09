@@ -103,19 +103,19 @@
   .btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
   .btn-row button { flex: 1 1 140px; }
 
-  .menu { display: grid; gap: 10px; }
+  .card.menu-card { width: min(100%, 540px); padding: 16px; gap: 8px; }
+  .menu { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 8px; }
   .dish {
-    display: grid; grid-template-columns: 56px 1fr auto; align-items: center; gap: 12px;
+    display: grid; grid-template-columns: 48px 1fr; align-items: center; gap: 10px;
     text-align: left; color: var(--ink); background: var(--card);
-    border: 2px solid var(--tile-line); box-shadow: 0 4px 0 var(--tile-line);
-    padding: 10px 12px;
+    border: 2px solid var(--tile-line); box-shadow: 0 3px 0 var(--tile-line);
+    padding: 6px 10px; min-width: 0;
   }
   .dish:active { box-shadow: 0 1px 0 var(--tile-line); }
-  .dish canvas { width: 56px; height: 56px; }
-  .dish-name { font-family: var(--font-display); font-size: 1.25rem; display: block; }
-  .dish-steps { font-family: var(--font-body); font-size: 0.85rem; color: var(--ink-soft); display: block; line-height: 1.35; }
-  .dish-best { font-family: var(--font-display); font-size: 0.85rem; color: var(--ink-soft); text-align: right; white-space: nowrap; }
-  .dish-best b { display: block; font-size: 1.15rem; font-weight: 400; color: var(--tomato-dark); font-variant-numeric: tabular-nums; }
+  .dish canvas { width: 48px; height: 48px; }
+  .dish-name { font-family: var(--font-display); font-size: 1.15rem; display: block; line-height: 1.2; }
+  .dish-meta { font-family: var(--font-body); font-size: 0.8rem; color: var(--ink-soft); display: block; }
+  .dish-meta b { font-family: var(--font-display); font-weight: 400; color: var(--tomato-dark); font-variant-numeric: tabular-nums; }
 
   .host { display: flex; align-items: center; gap: 12px; }
   .host svg { flex: none; width: 64px; height: 64px; }
@@ -261,6 +261,18 @@
       stops: [[0, "#f6fbf2"], [0.18, "#d9efc0"], [0.35, "#7cc46a"], [1, "#3f9a4f"]], edge: "#2f7a3e", h: 38, roots: true },
     fishcake: { name: "어묵 썰기", intro: "점선 위를 위에서 아래로 쓱 그어서 어묵을 썰어요. 점선에 가까울수록 점수가 높아요.",
       stops: [[0, "#f3d6a4"], [1, "#e4b46f"]], edge: "#b27a3c", h: 62, roots: false },
+    carrot: { name: "당근 썰기", intro: "점선 위를 위에서 아래로 쓱 그어서 당근을 썰어요. 점선에 가까울수록 점수가 높아요.",
+      stops: [[0, "#ffc285"], [1, "#f2832f"]], edge: "#c4621d", h: 34, roots: false },
+    potato: { name: "감자 썰기", intro: "껍질 깐 감자를 점선 따라 위에서 아래로 쓱 썰어요. 길쭉하게 썰어야 감자튀김이 돼요.",
+      stops: [[0, "#fbefc6"], [1, "#f1dc96"]], edge: "#c9a85a", h: 74, roots: false },
+    pepper: { name: "피망 썰기", intro: "점선 위를 위에서 아래로 쓱 그어서 피망을 썰어요. 점선에 가까울수록 점수가 높아요.",
+      stops: [[0, "#8fd27e"], [1, "#3f9a4f"]], edge: "#2f7a3e", h: 50, roots: false },
+    banana: { name: "바나나 썰기", intro: "점선 위를 위에서 아래로 쓱 그어서 바나나를 썰어요. 점선에 가까울수록 점수가 높아요.",
+      stops: [[0, "#c9a227"], [0.08, "#ffe066"], [0.92, "#ffe066"], [1, "#8a6a1a"]], edge: "#c9a227", h: 44, roots: false },
+    onionWhite: { name: "양파 썰기", intro: "점선 위를 위에서 아래로 쓱 그어서 양파를 썰어요. 눈이 맵기 전에 빨리 썰어요!",
+      stops: [[0, "#fbf6fb"], [1, "#eadff0"]], edge: "#b9a3c7", h: 70, roots: true },
+    gimbap: { name: "김밥 썰기", intro: "다 말린 김밥을 점선 따라 위에서 아래로 쓱 썰어요. 예쁘게 썰수록 점수가 높아요.",
+      stops: [[0, "#1f3324"], [1, "#2c4632"]], edge: "#0f1a12", h: 60, roots: false },
   };
   function makeChop(cfg) {
     const LINES = [150, 195, 240, 285, 330, 375];
@@ -414,6 +426,9 @@
     pan: { name: "팬 달구기", vessel: "pan", intro: "화면을 꾹 누르면 불이 세지고, 떼면 약해져요. 온도계 바늘을 초록 칸 안에 8초 동안 지켜 주세요." },
     pot: { name: "물 끓이기", vessel: "pot", intro: "화면을 꾹 누르면 불이 세지고, 떼면 약해져요. 보글보글 끓도록 온도를 초록 칸 안에 8초 동안 지켜 주세요." },
     griddle: { name: "팬케이크 굽기", vessel: "pan", food: "pancake", intro: "누르면 불이 세지고, 떼면 약해져요. 초록 칸 안에 오래 있을수록 노릇노릇하게 구워져요." },
+    oil: { name: "기름 온도 맞추기", vessel: "oil", intro: "꾹 누르면 불이 세지고, 떼면 약해져요. 바삭하게 튀기려면 기름 온도를 초록 칸 안에 8초 동안 지켜 주세요." },
+    ovenPizza: { name: "오븐에 굽기", vessel: "oven", food: "pizza", intro: "꾹 누르면 오븐이 뜨거워지고, 떼면 식어요. 초록 칸 안에 오래 있을수록 치즈가 맛있게 녹아요." },
+    ovenCake: { name: "오븐에 굽기", vessel: "oven", food: "cake", intro: "꾹 누르면 오븐이 뜨거워지고, 떼면 식어요. 초록 칸 안에 오래 있을수록 빵이 폭신하게 부풀어요." },
   };
   function makeHeat(cfg) {
     const DUR = 8, LO = 55, HI = 75;
@@ -433,6 +448,8 @@
       draw() {
         const ok = temp >= LO && temp <= HI;
         const now = performance.now() / 1000;
+        const cook = clamp(inZone / DUR, 0, 1), burn = clamp(burnt / 4, 0, 1);
+        if (cfg.vessel !== "oven") {
         rr(70, 286, 320, 70, 14); ctx.fillStyle = "#4d6e66"; ctx.fill();
         const fh = 8 + temp * 0.55;
         for (let i = 0; i < 9; i++) {
@@ -442,13 +459,33 @@
           ctx.beginPath(); ctx.moveTo(fx - 4, 288); ctx.quadraticCurveTo(fx, 288 - h * 0.5, fx + 4, 288); ctx.closePath();
           ctx.fillStyle = "#cfe9ff"; ctx.fill();
         }
-        if (cfg.vessel === "pot") {
+        }
+        if (cfg.vessel === "oven") {
+          rr(60, 76, 340, 284, 22); ctx.fillStyle = "#e3ebe8"; ctx.fill(); ctx.strokeStyle = "#9fb3ae"; ctx.lineWidth = 3; ctx.stroke();
+          for (let i = 0; i < 3; i++) { ctx.beginPath(); ctx.arc(130 + i * 50, 100, 10, 0, Math.PI * 2); ctx.fillStyle = "#9fb3ae"; ctx.fill(); }
+          rr(330, 90, 46, 20, 6); ctx.fillStyle = "#17423b"; ctx.fill();
+          rr(90, 125, 280, 215, 16); ctx.fillStyle = mixColor("#3a4543", "#a8552c", clamp(temp / 100, 0, 1)); ctx.fill();
+          ctx.strokeStyle = mixColor("#6d7d7a", "#ff6b4a", clamp(temp / 100, 0, 1)); ctx.lineWidth = 4;
+          ctx.beginPath(); for (let i = 0; i <= 10; i++) ctx.lineTo(110 + i * 24, i % 2 ? 315 : 305); ctx.stroke();
+          ctx.fillStyle = "#9fb3ae"; ctx.fillRect(100, 280, 260, 5);
+          if (cfg.food === "pizza") {
+            ctx.beginPath(); ctx.ellipse(230, 262, 110, 26, 0, 0, Math.PI * 2); ctx.fillStyle = mixColor("#f3d9a4", "#d9963f", cook); ctx.fill();
+            ctx.beginPath(); ctx.ellipse(230, 259, 96, 20, 0, 0, Math.PI * 2); ctx.fillStyle = mixColor("#fff3c4", "#f4b942", cook); ctx.fill();
+            for (let i = 0; i < 6; i++) { ctx.beginPath(); ctx.ellipse(170 + i * 24, 256 + (i % 2) * 8, 10, 4, 0, 0, Math.PI * 2); ctx.fillStyle = "#c8402c"; ctx.fill(); }
+          } else {
+            const rise = 18 + cook * 22;
+            rr(160, 278 - rise - 20, 140, rise + 20, 12); ctx.fillStyle = mixColor("#f7e7b0", "#d99a45", cook); ctx.fill();
+            rr(150, 262, 160, 18, 4); ctx.fillStyle = "#8fa3a0"; ctx.fill();
+          }
+          if (burn > 0) { ctx.globalAlpha = burn * 0.6; rr(90, 125, 280, 215, 16); ctx.fillStyle = "#2b2420"; ctx.fill(); ctx.globalAlpha = 1; }
+          rr(90, 125, 280, 215, 16); ctx.strokeStyle = "#9fb3ae"; ctx.lineWidth = 6; ctx.stroke();
+        } else if (cfg.vessel === "pot" || cfg.vessel === "oil") {
           ctx.fillStyle = "#8fa3a0";
           rr(70, 170, 30, 14, 6); ctx.fill(); rr(360, 170, 30, 14, 6); ctx.fill();
           rr(95, 140, 270, 150, 18); ctx.fillStyle = "#b9c9c6"; ctx.fill();
           ctx.fillStyle = "#a3b5b2"; ctx.fillRect(95, 140, 270, 14);
           ctx.beginPath(); ctx.ellipse(230, 147, 125, 18, 0, 0, Math.PI * 2);
-          ctx.fillStyle = mixColor("#cfe8f3", "#e9f6fb", clamp((temp - 30) / 50, 0, 1)); ctx.fill();
+          ctx.fillStyle = cfg.vessel === "oil" ? mixColor("#f3d36b", "#f6c544", clamp((temp - 30) / 50, 0, 1)) : mixColor("#cfe8f3", "#e9f6fb", clamp((temp - 30) / 50, 0, 1)); ctx.fill();
           if (temp > 45) {
             const n = Math.round((temp - 45) / 6);
             for (let i = 0; i < n; i++) {
@@ -463,7 +500,6 @@
           ctx.beginPath(); ctx.ellipse(230, 204, 140, 38, 0, 0, Math.PI * 2);
           ctx.fillStyle = mixColor("#5d6b68", "#8a4b3a", clamp((temp - 30) / 70, 0, 1)); ctx.fill();
           if (cfg.food === "pancake") {
-            const cook = clamp(inZone / DUR, 0, 1), burn = clamp(burnt / 4, 0, 1);
             ctx.beginPath(); ctx.ellipse(230, 202, 90, 25, 0, 0, Math.PI * 2);
             ctx.fillStyle = mixColor("#f7e7b0", "#d99a45", cook); ctx.fill();
             if (burn > 0) { ctx.globalAlpha = burn * 0.85; ctx.fillStyle = "#5a3a22"; ctx.fill(); ctx.globalAlpha = 1; }
@@ -472,7 +508,7 @@
         if (ok) {
           ctx.strokeStyle = "rgba(160,175,172,0.7)"; ctx.lineWidth = 3;
           for (let i = 0; i < 3; i++) {
-            const sx = 180 + i * 50, o = (now * 30 + i * 20) % 40, base = cfg.vessel === "pot" ? 125 : 180;
+            const sx = 180 + i * 50, o = (now * 30 + i * 20) % 40, base = cfg.vessel === "pot" || cfg.vessel === "oil" ? 125 : cfg.vessel === "oven" ? 150 : 180;
             ctx.beginPath(); ctx.moveTo(sx, base - o); ctx.bezierCurveTo(sx - 10, base - 15 - o, sx + 10, base - 25 - o, sx, base - 40 - o); ctx.stroke();
           }
         }
@@ -483,7 +519,7 @@
         const ty = gy + gh * (1 - temp / 100);
         ctx.fillStyle = ok ? "#4caf6a" : "#ff6b4a";
         ctx.fillRect(gx - 8, ty - 2, 46, 4);
-        label(holding ? "불 세게!" : "누르고 있으면 불이 세져요", 230, 380, 18);
+        label(holding ? (cfg.vessel === "oven" ? "오븐 뜨겁게!" : "불 세게!") : (cfg.vessel === "oven" ? "누르고 있으면 오븐이 뜨거워져요" : "누르고 있으면 불이 세져요"), 230, 380, 18);
         timerBar(t / DUR);
         label("적정 시간 " + inZone.toFixed(1) + "초", 140, 60, 20);
       },
@@ -496,6 +532,8 @@
       liquid: "#fbfbf6", liquidEdge: "#d9dcd2", jug: "#7fb8d6", lo: 0.55, hi: 0.68, item: "우유" },
     sauce: { name: "소스 붓기", intro: "화면을 꾹 누르면 빨간 떡볶이 소스가 부어져요. 초록 선 사이에서 손을 떼세요.",
       liquid: "#d8432f", liquidEdge: "#a92f1f", jug: "#f2c25a", lo: 0.45, hi: 0.58, item: "소스" },
+    yogurt: { name: "요거트 붓기", intro: "꾹 누르면 요거트가 부어져요. 초록 선 사이에서 손을 떼세요. 손을 떼도 조금 더 흘러요!",
+      liquid: "#fbf3f5", liquidEdge: "#e7cfd6", jug: "#f2a7b8", lo: 0.5, hi: 0.62, item: "요거트" },
   };
   function makePour(cfg) {
     const LIMIT = 12, RATE = 0.3;
@@ -571,6 +609,12 @@
     tteok: { c0: "#fbf6ec", c1: "#e5533b" },
     fishcake: { c0: "#ecc78f", c1: "#d9773f" },
     lump: { c0: "#fffdf6", c1: "#fff3cf" },
+    noodle: { c0: "#f2e1a6", c1: "#f5c95a" },
+    ham: { c0: "#f4a6a0", c1: "#ee8c84" },
+    ketchupRice: { c0: "#fffaf0", c1: "#e4643f" },
+    bananaSlice: { c0: "#fff1a8", c1: "#fff1a8" },
+    berry: { c0: "#e8384f", c1: "#e8384f" },
+    kiwi: { c0: "#7cc46a", c1: "#7cc46a" },
   };
   const STIR = {
     rice: { name: "밥 볶기", vessel: "pan", inner: ["#4a5754", "#4a5754"], bits: [[170, "rice"], [26, "egg"], [22, "onion"]], need: 5,
@@ -579,6 +623,14 @@
       intro: "소스가 떡에 골고루 묻도록 빙글빙글 다섯 바퀴 돌려요. 빨리 돌릴수록 점수가 높아요." },
     batter: { name: "반죽 섞기", vessel: "bowl", inner: ["#f7f1df", "#f6d67a"], bits: [[60, "lump"]], need: 6,
       intro: "그릇 안에서 빙글빙글 여섯 바퀴 저어서 밀가루 덩어리를 풀어요. 빨리 저을수록 점수가 높아요." },
+    ramen: { name: "면 풀기", vessel: "pot", inner: ["#f6e2b5", "#e0703c"], bits: [[46, "noodle"], [10, "onion"]], need: 5,
+      intro: "냄비 안에서 빙글빙글 다섯 바퀴 저어서 꼬불꼬불 면을 풀어요. 빨리 저을수록 점수가 높아요." },
+    omurice: { name: "케첩밥 볶기", vessel: "pan", inner: ["#4a5754", "#4a5754"], bits: [[150, "ketchupRice"], [20, "ham"], [18, "onion"]], need: 5,
+      intro: "팬 안에서 빙글빙글 다섯 바퀴 볶아서 밥을 케첩 색으로 물들여요." },
+    salad: { name: "과일 섞기", vessel: "bowl", inner: ["#fbf3f5", "#fbf3f5"], bits: [[22, "bananaSlice"], [16, "berry"], [14, "kiwi"]], need: 4,
+      intro: "그릇 안에서 빙글빙글 네 바퀴 저어서 과일과 요거트를 섞어요." },
+    dough: { name: "반죽 섞기", vessel: "bowl", inner: ["#f7f1df", "#f3e3b8"], bits: [[60, "lump"]], need: 6,
+      intro: "그릇 안에서 빙글빙글 여섯 바퀴 저어서 반죽을 매끈하게 만들어요." },
   };
   function makeStir(cfg) {
     const CX = 250, CY = 210, R = 150, NEED = cfg.need, LIMIT = 14;
@@ -624,6 +676,9 @@
         const prog = clamp(total / (NEED * Math.PI * 2), 0, 1);
         if (cfg.vessel === "bowl") {
           ctx.beginPath(); ctx.arc(CX, CY, R, 0, Math.PI * 2); ctx.fillStyle = "#8cc6dd"; ctx.fill();
+        } else if (cfg.vessel === "pot") {
+          ctx.fillStyle = "#8fa3a0"; rr(CX - R - 30, CY - 12, 40, 24, 8); ctx.fill(); rr(CX + R - 10, CY - 12, 40, 24, 8); ctx.fill();
+          ctx.beginPath(); ctx.arc(CX, CY, R, 0, Math.PI * 2); ctx.fillStyle = "#b9c9c6"; ctx.fill();
         } else {
           ctx.fillStyle = "#2d3a37";
           ctx.save(); ctx.translate(CX, CY); ctx.rotate(0.6); rr(R - 12, -11, 130, 22, 10); ctx.fill(); ctx.restore();
@@ -640,6 +695,12 @@
           else if (b.kind === "onion") { ctx.beginPath(); ctx.arc(0, 0, 4.5, 0, Math.PI * 2); ctx.fill(); ctx.beginPath(); ctx.arc(0, 0, 2, 0, Math.PI * 2); ctx.fillStyle = "#c7ecb5"; ctx.fill(); }
           else if (b.kind === "tteok") { rr(-14, -6, 28, 12, 6); ctx.fill(); ctx.strokeStyle = "rgba(0,0,0,0.12)"; ctx.lineWidth = 1.5; ctx.stroke(); }
           else if (b.kind === "fishcake") { ctx.beginPath(); ctx.moveTo(-10, 6); ctx.lineTo(10, 6); ctx.lineTo(0, -9); ctx.closePath(); ctx.fill(); }
+          else if (b.kind === "noodle") { ctx.beginPath(); for (let i = 0; i <= 8; i++) ctx.lineTo(-16 + i * 4, Math.sin(i * 1.6) * 3); ctx.strokeStyle = ctx.fillStyle; ctx.lineWidth = 3; ctx.lineCap = "round"; ctx.stroke(); }
+          else if (b.kind === "ham") { rr(-5, -5, 10, 10, 2); ctx.fill(); }
+          else if (b.kind === "ketchupRice") { ctx.beginPath(); ctx.ellipse(0, 0, 5, 2.6, 0, 0, Math.PI * 2); ctx.fill(); }
+          else if (b.kind === "bananaSlice") { ctx.beginPath(); ctx.arc(0, 0, 9, 0, Math.PI * 2); ctx.fill(); ctx.strokeStyle = "#e9cf6a"; ctx.lineWidth = 1.5; ctx.stroke(); }
+          else if (b.kind === "berry") { drawItem("strawberry", 0, 0, 0.7); }
+          else if (b.kind === "kiwi") { ctx.beginPath(); ctx.arc(0, 0, 9, 0, Math.PI * 2); ctx.fill(); ctx.beginPath(); ctx.arc(0, 0, 3, 0, Math.PI * 2); ctx.fillStyle = "#eef7d8"; ctx.fill(); ctx.fillStyle = "#1d2420"; for (let i = 0; i < 6; i++) { ctx.beginPath(); ctx.arc(Math.cos(i) * 5.5, Math.sin(i) * 5.5, 0.9, 0, Math.PI * 2); ctx.fill(); } }
           else if (b.kind === "lump") { const r = 6 * (1 - prog) + 0.5; ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2); ctx.fill(); }
           ctx.restore();
         });
@@ -664,6 +725,245 @@
         }
         timerBar(t / LIMIT);
         label(Math.min(NEED, Math.floor(total / (Math.PI * 2))) + " / " + NEED + " 바퀴", 250, 385, 20);
+      },
+    };
+  }
+
+  // ---------- shared item shapes (toppings, fruit) ----------
+  const STRIP = { carrot: "#f2832f", spinach: "#3f8f3a", eggStrip: "#ffcc4d", danmuji: "#ffe14d" };
+  function drawItem(kind, x, y, scale = 1) {
+    ctx.save(); ctx.translate(x, y); ctx.scale(scale, scale);
+    if (kind === "pepperoni") {
+      ctx.beginPath(); ctx.arc(0, 0, 15, 0, Math.PI * 2); ctx.fillStyle = "#c8402c"; ctx.fill();
+      ctx.fillStyle = "#a3301f"; [[-5, -4], [5, 3], [-2, 7], [6, -6]].forEach(([a, b]) => { ctx.beginPath(); ctx.arc(a, b, 2, 0, Math.PI * 2); ctx.fill(); });
+    } else if (kind === "pepperRing") {
+      ctx.beginPath(); ctx.arc(0, 0, 11, 0, Math.PI * 2); ctx.strokeStyle = "#3f9a4f"; ctx.lineWidth = 5; ctx.stroke();
+    } else if (kind === "mushroom") {
+      ctx.beginPath(); ctx.arc(0, 2, 13, Math.PI, 0); ctx.closePath(); ctx.fillStyle = "#c9a27a"; ctx.fill();
+      rr(-4, 2, 8, 10, 3); ctx.fillStyle = "#f2e3cf"; ctx.fill();
+    } else if (kind === "strawberry") {
+      ctx.beginPath(); ctx.moveTo(0, 15); ctx.quadraticCurveTo(-17, 0, -11, -9); ctx.quadraticCurveTo(0, -15, 11, -9); ctx.quadraticCurveTo(17, 0, 0, 15);
+      ctx.fillStyle = "#e8384f"; ctx.fill();
+      ctx.fillStyle = "#ffe9a8"; [[-5, -2], [4, -3], [0, 5], [-3, 9], [5, 6]].forEach(([a, b]) => { ctx.beginPath(); ctx.arc(a, b, 1.2, 0, Math.PI * 2); ctx.fill(); });
+      ctx.fillStyle = "#3f9a4f"; ctx.beginPath(); ctx.moveTo(-8, -10); ctx.lineTo(0, -6); ctx.lineTo(8, -10); ctx.lineTo(0, -15); ctx.closePath(); ctx.fill();
+    } else if (kind === "blueberry") {
+      ctx.beginPath(); ctx.arc(0, 0, 9, 0, Math.PI * 2); ctx.fillStyle = "#3b4fa0"; ctx.fill();
+      ctx.beginPath(); ctx.arc(-3, -3, 2.5, 0, Math.PI * 2); ctx.fillStyle = "rgba(255,255,255,0.5)"; ctx.fill();
+    } else if (STRIP[kind]) {
+      rr(-125, -8, 250, 16, 8); ctx.fillStyle = STRIP[kind]; ctx.fill();
+    }
+    ctx.restore();
+  }
+  function drawSeaweedSheet(top, bottom) {
+    rr(90, top, 320, bottom - top, 6); ctx.fillStyle = "#1f3324"; ctx.fill();
+    if (bottom - top > 60) {
+      rr(96, top + 50, 308, bottom - top - 56, 6); ctx.fillStyle = "#fbfaf3"; ctx.fill();
+      const rnd = seeded(5);
+      ctx.fillStyle = "#ece8d8";
+      for (let i = 0; i < 80; i++) { const y = top + 56 + rnd() * (bottom - top - 66); ctx.beginPath(); ctx.ellipse(100 + rnd() * 300, y, 3, 1.6, rnd() * 3, 0, Math.PI * 2); ctx.fill(); }
+    }
+  }
+
+  // ---------- place: tap the faded spots to put toppings on ----------
+  const PLACE = {
+    pizza: { name: "토핑 올리기", base: "pizza", intro: "흐릿하게 보이는 자리를 톡톡 눌러 토핑을 올려요. 자리 한가운데를 누를수록 점수가 높아요.",
+      spots: [[250, 205, "pepperoni"], [180, 160, "pepperoni"], [320, 160, "pepperoni"], [180, 255, "pepperoni"], [320, 255, "pepperoni"],
+              [250, 125, "pepperRing"], [250, 285, "pepperRing"], [140, 205, "mushroom"], [360, 205, "mushroom"]] },
+    cake: { name: "딸기 올리기", base: "cake", intro: "케이크 위 흐릿한 자리를 톡톡 눌러 딸기를 올려요. 자리 한가운데를 누를수록 점수가 높아요.",
+      spots: [0, 1, 2, 3, 4, 5, 6].map(i => i === 6 ? [250, 210, "strawberry"] : [250 + Math.cos(i / 6 * Math.PI * 2) * 90, 210 + Math.sin(i / 6 * Math.PI * 2) * 90, "strawberry"]) },
+    gimbap: { name: "재료 올리기", base: "gimbap", intro: "밥 위에 흐릿하게 보이는 줄을 톡톡 눌러 당근, 시금치, 계란, 단무지를 올려요.",
+      spots: [[250, 230, "carrot"], [250, 258, "spinach"], [250, 286, "eggStrip"], [250, 314, "danmuji"]] },
+    salad: { name: "블루베리 올리기", base: "salad", intro: "요거트 위 흐릿한 자리를 톡톡 눌러 블루베리를 올려요.",
+      spots: [[200, 160], [300, 160], [160, 220], [340, 220], [210, 270], [290, 270], [250, 210]].map(([x, y]) => [x, y, "blueberry"]) },
+  };
+  function drawPlaceBase(base) {
+    if (base === "pizza") {
+      ctx.beginPath(); ctx.arc(250, 205, 155, 0, Math.PI * 2); ctx.fillStyle = "#e9b872"; ctx.fill();
+      ctx.beginPath(); ctx.arc(250, 205, 135, 0, Math.PI * 2); ctx.fillStyle = "#d8432f"; ctx.fill();
+      const rnd = seeded(3);
+      ctx.fillStyle = "#ffe08a";
+      for (let i = 0; i < 40; i++) { const a = rnd() * Math.PI * 2, r = Math.sqrt(rnd()) * 118; ctx.beginPath(); ctx.ellipse(250 + Math.cos(a) * r, 205 + Math.sin(a) * r, 16, 11, a, 0, Math.PI * 2); ctx.fill(); }
+    } else if (base === "cake") {
+      ctx.beginPath(); ctx.arc(250, 210, 150, 0, Math.PI * 2); ctx.fillStyle = "#f6dcd0"; ctx.fill();
+      ctx.beginPath(); ctx.arc(250, 210, 140, 0, Math.PI * 2); ctx.fillStyle = "#fffaf4"; ctx.fill();
+      for (let i = 0; i < 24; i++) { const a = i / 24 * Math.PI * 2; ctx.beginPath(); ctx.arc(250 + Math.cos(a) * 128, 210 + Math.sin(a) * 128, 9, 0, Math.PI * 2); ctx.fillStyle = "#ffffff"; ctx.fill(); ctx.strokeStyle = "#f1d9c9"; ctx.lineWidth = 1.5; ctx.stroke(); }
+    } else if (base === "gimbap") {
+      rr(70, 70, 360, 290, 10); ctx.fillStyle = "#d9c38c"; ctx.fill();
+      ctx.strokeStyle = "#c4ab6f"; ctx.lineWidth = 2;
+      for (let y = 82; y < 360; y += 12) { ctx.beginPath(); ctx.moveTo(72, y); ctx.lineTo(428, y); ctx.stroke(); }
+      drawSeaweedSheet(90, 345);
+    } else if (base === "salad") {
+      ctx.beginPath(); ctx.arc(250, 210, 160, 0, Math.PI * 2); ctx.fillStyle = "#8cc6dd"; ctx.fill();
+      ctx.beginPath(); ctx.arc(250, 210, 145, 0, Math.PI * 2); ctx.fillStyle = "#fbf3f5"; ctx.fill();
+      const rnd = seeded(9);
+      for (let i = 0; i < 26; i++) {
+        const a = rnd() * Math.PI * 2, r = 30 + rnd() * 100, x = 250 + Math.cos(a) * r, y = 210 + Math.sin(a) * r, k = rnd();
+        if (k < 0.45) { ctx.beginPath(); ctx.arc(x, y, 10, 0, Math.PI * 2); ctx.fillStyle = "#fff1a8"; ctx.fill(); ctx.strokeStyle = "#e9cf6a"; ctx.lineWidth = 1.5; ctx.stroke(); }
+        else if (k < 0.75) drawItem("strawberry", x, y, 0.7);
+        else { ctx.beginPath(); ctx.arc(x, y, 9, 0, Math.PI * 2); ctx.fillStyle = "#7cc46a"; ctx.fill(); ctx.beginPath(); ctx.arc(x, y, 3, 0, Math.PI * 2); ctx.fillStyle = "#eef7d8"; ctx.fill(); }
+      }
+    }
+  }
+  function makePlace(cfg) {
+    const LIMIT = 15;
+    let spots, accs, misses, t, done;
+    function finishPlace() {
+      done = true;
+      const sum = accs.reduce((a, b) => a + b, 0);
+      finish(Math.round(clamp((sum / spots.length) * 100 - misses * 5, 0, 100)));
+    }
+    return {
+      name: cfg.name, intro: cfg.intro,
+      init() { spots = cfg.spots.map(([x, y, kind]) => ({ x, y, kind, filled: false })); accs = []; misses = 0; t = 0; done = false; },
+      update(dt) { t += dt; if (!done && t >= LIMIT) finishPlace(); },
+      down(p) {
+        if (done) return;
+        let best = null, bd = 1e9;
+        spots.forEach(s => {
+          if (s.filled) return;
+          const d = STRIP[s.kind] ? (Math.abs(p.x - s.x) < 140 ? Math.abs(p.y - s.y) : 1e9) : Math.hypot(p.x - s.x, p.y - s.y);
+          if (d < bd) { bd = d; best = s; }
+        });
+        const strip = best && STRIP[best.kind];
+        if (best && bd < (strip ? 14 : 34)) {
+          best.filled = true;
+          const acc = strip ? clamp(1 - Math.max(0, bd - 3) / 11, 0, 1) : clamp(1 - Math.max(0, bd - 6) / 28, 0, 1);
+          accs.push(acc);
+          const [txt, col] = judge(acc * 100);
+          pop(txt, best.x, best.y - 30, col);
+          beep(500 + acc * 400, 0.07, "triangle");
+          if (spots.every(s => s.filled)) finishPlace();
+        } else {
+          misses++;
+          pop("빗나감", p.x, p.y - 20, "#7a8f89");
+          beep(180, 0.1, "square", 0.04);
+        }
+      },
+      draw() {
+        drawPlaceBase(cfg.base);
+        spots.forEach(s => {
+          if (s.filled) { drawItem(s.kind, s.x, s.y); return; }
+          ctx.globalAlpha = 0.3; drawItem(s.kind, s.x, s.y); ctx.globalAlpha = 1;
+          if (!STRIP[s.kind]) { ctx.setLineDash([4, 4]); ctx.beginPath(); ctx.arc(s.x, s.y, 20, 0, Math.PI * 2); ctx.strokeStyle = "rgba(23,66,59,0.6)"; ctx.lineWidth = 2; ctx.stroke(); ctx.setLineDash([]); }
+        });
+        timerBar(t / LIMIT);
+        label("남은 자리 " + spots.filter(s => !s.filled).length + "개", 250, 385, 20);
+      },
+    };
+  }
+
+  // ---------- roll: swipe up to roll the gimbap ----------
+  function makeRoll() {
+    const NEED = 4, LIMIT = 10;
+    let rolls, shown, t, start, done;
+    return {
+      name: "김밥 말기",
+      intro: "김발을 아래에서 위로 힘차게 쓸어 올려서 김밥을 말아요. 네 번 쓸어 올리면 완성! 빠를수록 점수가 높아요.",
+      init() { rolls = 0; shown = 0; t = 0; start = null; done = false; },
+      update(dt) {
+        t += dt;
+        shown = Math.min(rolls, shown + dt * 3);
+        if (!done && t >= LIMIT) { done = true; finish(Math.round((rolls / NEED) * 50)); }
+      },
+      down(p) { start = p; },
+      up(p) {
+        if (!start || done) return;
+        const dy = start.y - p.y, dx = Math.abs(p.x - start.x);
+        start = null;
+        if (dy < 50 || dx > dy) return;
+        rolls++;
+        pop(rolls + "번!", 250, 120, "#d49a00");
+        beep(440 + rolls * 90, 0.09, "triangle");
+        if (rolls >= NEED) { done = true; finish(t <= 4 ? 100 : Math.round(clamp(100 - (t - 4) * 10, 40, 100))); }
+      },
+      draw() {
+        rr(70, 70, 360, 290, 10); ctx.fillStyle = "#d9c38c"; ctx.fill();
+        ctx.strokeStyle = "#c4ab6f"; ctx.lineWidth = 2;
+        for (let y = 82; y < 360; y += 12) { ctx.beginPath(); ctx.moveTo(72, y); ctx.lineTo(428, y); ctx.stroke(); }
+        const prog = shown / NEED, rollY = lerp(330, 110, prog), rad = 16 + prog * 22;
+        if (rollY - rad > 95) {
+          drawSeaweedSheet(90, rollY);
+          ["carrot", "spinach", "eggStrip", "danmuji"].forEach((k, i) => { const y = 230 + i * 28; if (y < rollY - rad) drawItem(k, 250, y); });
+        }
+        rr(90, rollY - rad, 320, rad * 2, rad); ctx.fillStyle = "#1f3324"; ctx.fill();
+        ctx.fillStyle = "rgba(255,255,255,0.12)"; ctx.fillRect(100, rollY - rad * 0.6, 300, 4);
+        if (!done) {
+          const now = performance.now() / 1000, o = (now * 60) % 50;
+          ctx.strokeStyle = "rgba(23,66,59,0.55)"; ctx.lineWidth = 6; ctx.lineCap = "round";
+          ctx.beginPath(); ctx.moveTo(460, 300 - o); ctx.lineTo(460, 230 - o); ctx.moveTo(446, 244 - o); ctx.lineTo(460, 230 - o); ctx.lineTo(474, 244 - o); ctx.stroke();
+        }
+        timerBar(t / LIMIT);
+        label(rolls + " / " + NEED + " 번 말기", 250, 385, 20);
+      },
+    };
+  }
+
+  // ---------- rub: drag over the food to peel it or to sprinkle on it ----------
+  const RUB = {
+    peel: { name: "감자 껍질 까기", mode: "peel", base: "potato", intro: "감자 위를 손가락으로 문질러서 갈색 껍질을 모두 벗겨요. 빨리 깔수록 점수가 높아요." },
+    salt: { name: "소금 뿌리기", mode: "sprinkle", base: "fries", color: "#ffffff", intro: "감자튀김 위를 손가락으로 쓱쓱 문질러 소금을 골고루 뿌려요." },
+    ketchup: { name: "케첩 뿌리기", mode: "sprinkle", base: "omelet", color: "#d8432f", intro: "오므라이스 위를 손가락으로 문질러서 케첩을 골고루 뿌려요." },
+  };
+  function makeRub(cfg) {
+    const LIMIT = 12, STEP = 18, BRUSH = 26;
+    const shape = cfg.base === "fries" ? { type: "rect", x0: 140, y0: 130, x1: 360, y1: 290 } :
+                  cfg.base === "omelet" ? { type: "ell", cx: 250, cy: 210, rx: 150, ry: 78 } :
+                                          { type: "ell", cx: 250, cy: 210, rx: 155, ry: 100 };
+    const inside = (x, y) => shape.type === "rect" ? x > shape.x0 && x < shape.x1 && y > shape.y0 && y < shape.y1 :
+      ((x - shape.cx) / shape.rx) ** 2 + ((y - shape.cy) / shape.ry) ** 2 < 0.85;
+    let cells, t, ptr, done, lastPct;
+    const doneCell = c => cfg.mode === "peel" ? c.v <= 0.05 : c.v >= 0.95;
+    const coverage = () => cells.filter(doneCell).length / cells.length;
+    function apply(p) {
+      cells.forEach(c => {
+        if (Math.hypot(c.x - p.x, c.y - p.y) < BRUSH) c.v = clamp(c.v + (cfg.mode === "peel" ? -0.5 : 0.5), 0, 1);
+      });
+      const cov = coverage(), pct = Math.floor(cov * 4);
+      if (pct > lastPct && pct < 4) { lastPct = pct; pop(pct * 25 + "%", 250, 100, "#d49a00"); beep(500 + pct * 100, 0.06, "triangle"); }
+      if (cov >= 0.92 && !done) { done = true; finish(t <= 5 ? 100 : Math.round(clamp(100 - (t - 5) * 8, 40, 100))); }
+    }
+    return {
+      name: cfg.name, intro: cfg.intro,
+      init() {
+        cells = []; t = 0; ptr = null; done = false; lastPct = 0;
+        const rnd = seeded(13);
+        for (let x = 80; x <= 420; x += STEP) for (let y = 90; y <= 330; y += STEP)
+          if (inside(x, y)) cells.push({ x, y, v: cfg.mode === "peel" ? 1 : 0, jx: rnd() * 6 - 3, jy: rnd() * 6 - 3, r: 9 + rnd() * 4 });
+      },
+      update(dt) {
+        if (done) return;
+        t += dt;
+        if (t >= LIMIT) { done = true; finish(Math.round(coverage() * 60)); }
+      },
+      down(p) { ptr = p; if (!done) apply(p); },
+      move(p) { if (ptr && !done) { ptr = p; apply(p); } },
+      up() { ptr = null; },
+      draw() {
+        if (cfg.base === "potato") {
+          ctx.beginPath(); ctx.ellipse(250, 210, 165, 108, 0, 0, Math.PI * 2); ctx.fillStyle = "#f6e3a6"; ctx.fill();
+          cells.forEach(c => { if (c.v > 0) { ctx.globalAlpha = c.v; ctx.beginPath(); ctx.arc(c.x + c.jx, c.y + c.jy, c.r, 0, Math.PI * 2); ctx.fillStyle = "#a1713f"; ctx.fill(); } });
+          ctx.globalAlpha = 1;
+          ctx.beginPath(); ctx.ellipse(250, 210, 165, 108, 0, 0, Math.PI * 2); ctx.strokeStyle = "#c9a85a"; ctx.lineWidth = 3; ctx.stroke();
+        } else if (cfg.base === "fries") {
+          plateBase();
+          const rnd = seeded(21);
+          for (let i = 0; i < 26; i++) {
+            ctx.save(); ctx.translate(150 + rnd() * 200, 140 + rnd() * 140); ctx.rotate(rnd() * 3);
+            rr(-34, -6, 68, 12, 3); ctx.fillStyle = "#f5c542"; ctx.fill(); ctx.strokeStyle = "#d99a2b"; ctx.lineWidth = 1.5; ctx.stroke();
+            ctx.restore();
+          }
+          cells.forEach(c => { if (c.v > 0) { ctx.globalAlpha = c.v; ctx.fillStyle = "#ffffff"; [[0, 0], [5, 4], [-4, 5]].forEach(([a, b]) => { ctx.beginPath(); ctx.arc(c.x + c.jx + a, c.y + c.jy + b, 1.8, 0, Math.PI * 2); ctx.fill(); }); } });
+          ctx.globalAlpha = 1;
+        } else {
+          plateBase();
+          ctx.beginPath(); ctx.ellipse(250, 210, 160, 85, 0, 0, Math.PI * 2); ctx.fillStyle = "#ffd34d"; ctx.fill();
+          ctx.beginPath(); ctx.ellipse(220, 185, 80, 25, -0.2, 0, Math.PI * 2); ctx.fillStyle = "rgba(255,255,255,0.3)"; ctx.fill();
+          cells.forEach(c => { if (c.v > 0) { ctx.globalAlpha = c.v; ctx.beginPath(); ctx.arc(c.x + c.jx, c.y + c.jy, c.r * 0.9, 0, Math.PI * 2); ctx.fillStyle = cfg.color; ctx.fill(); } });
+          ctx.globalAlpha = 1;
+        }
+        if (ptr) { ctx.beginPath(); ctx.arc(ptr.x, ptr.y, BRUSH, 0, Math.PI * 2); ctx.strokeStyle = "rgba(23,66,59,0.5)"; ctx.lineWidth = 3; ctx.stroke(); }
+        timerBar(t / LIMIT);
+        label((cfg.mode === "peel" ? "껍질 벗긴 정도 " : "골고루 뿌린 정도 ") + Math.round(coverage() * 100) + "%", 250, 380, 20);
       },
     };
   }
@@ -714,6 +1014,69 @@
       ctx.beginPath(); ctx.moveTo(200, 196); ctx.quadraticCurveTo(190, 230, 198, 250); ctx.lineWidth = 8; ctx.strokeStyle = "#b9651f"; ctx.lineCap = "round"; ctx.stroke();
       rr(232, 176, 34, 20, 4); ctx.fillStyle = "#fff1a8"; ctx.fill();
     },
+    gimbap() {
+      plateBase();
+      [[150, 200], [200, 180], [250, 172], [300, 180], [350, 200], [190, 245], [250, 238], [310, 245]].forEach(([x, y]) => {
+        ctx.beginPath(); ctx.arc(x, y, 27, 0, Math.PI * 2); ctx.fillStyle = "#1f3324"; ctx.fill();
+        ctx.beginPath(); ctx.arc(x, y, 22, 0, Math.PI * 2); ctx.fillStyle = "#fbfaf3"; ctx.fill();
+        [["#f2832f", -6, -5], ["#3f8f3a", 6, -5], ["#ffcc4d", -6, 6], ["#ffe14d", 6, 6]].forEach(([c, a, b]) => { rr(x + a - 4, y + b - 4, 8, 8, 2); ctx.fillStyle = c; ctx.fill(); });
+      });
+    },
+    ramen() {
+      ctx.beginPath(); ctx.arc(250, 212, 160, 0, Math.PI * 2); ctx.fillStyle = "#ffffff"; ctx.fill(); ctx.strokeStyle = "#c6e2d7"; ctx.lineWidth = 4; ctx.stroke();
+      ctx.beginPath(); ctx.arc(250, 212, 135, 0, Math.PI * 2); ctx.fillStyle = "#e0703c"; ctx.fill();
+      const rnd = seeded(17);
+      ctx.strokeStyle = "#f5d27a"; ctx.lineWidth = 4; ctx.lineCap = "round";
+      for (let i = 0; i < 26; i++) {
+        const cx = 170 + rnd() * 160, cy = 150 + rnd() * 130, a = rnd() * 3;
+        ctx.beginPath(); for (let j = 0; j <= 10; j++) ctx.lineTo(cx + Math.cos(a) * (j * 5 - 25) - Math.sin(a) * Math.sin(j * 1.4) * 5, cy + Math.sin(a) * (j * 5 - 25) + Math.cos(a) * Math.sin(j * 1.4) * 5); ctx.stroke();
+      }
+      ctx.beginPath(); ctx.ellipse(305, 175, 36, 30, 0.3, 0, Math.PI * 2); ctx.fillStyle = "#ffffff"; ctx.fill();
+      ctx.beginPath(); ctx.arc(308, 177, 15, 0, Math.PI * 2); ctx.fillStyle = "#ffb627"; ctx.fill();
+      for (let i = 0; i < 10; i++) { ctx.beginPath(); ctx.arc(170 + rnd() * 120, 230 + rnd() * 50, 5, 0, Math.PI * 2); ctx.fillStyle = "#4caf6a"; ctx.fill(); }
+    },
+    omurice() {
+      plateBase();
+      ctx.beginPath(); ctx.ellipse(250, 210, 135, 68, 0, 0, Math.PI * 2); ctx.fillStyle = "#ffd34d"; ctx.fill();
+      ctx.beginPath(); ctx.ellipse(225, 190, 70, 20, -0.2, 0, Math.PI * 2); ctx.fillStyle = "rgba(255,255,255,0.3)"; ctx.fill();
+      ctx.strokeStyle = "#d8432f"; ctx.lineWidth = 9; ctx.lineCap = "round"; ctx.lineJoin = "round";
+      ctx.beginPath(); for (let i = 0; i <= 8; i++) ctx.lineTo(160 + i * 22, i % 2 ? 185 : 235); ctx.stroke();
+    },
+    pizza() {
+      ctx.beginPath(); ctx.arc(250, 215, 172, 0, Math.PI * 2); ctx.fillStyle = "#d9a066"; ctx.fill();
+      ctx.beginPath(); ctx.arc(250, 215, 155, 0, Math.PI * 2); ctx.fillStyle = "#e9b872"; ctx.fill();
+      ctx.beginPath(); ctx.arc(250, 215, 137, 0, Math.PI * 2); ctx.fillStyle = "#f4c95d"; ctx.fill();
+      [[250, 215, "pepperoni"], [185, 170, "pepperoni"], [315, 170, "pepperoni"], [185, 262, "pepperoni"], [315, 262, "pepperoni"], [250, 135, "pepperRing"], [250, 295, "pepperRing"], [145, 215, "mushroom"], [355, 215, "mushroom"]]
+        .forEach(([x, y, k]) => drawItem(k, x, y));
+      ctx.strokeStyle = "rgba(160,100,40,0.5)"; ctx.lineWidth = 2;
+      for (let i = 0; i < 4; i++) { const a = i / 4 * Math.PI; ctx.beginPath(); ctx.moveTo(250 - Math.cos(a) * 137, 215 - Math.sin(a) * 137); ctx.lineTo(250 + Math.cos(a) * 137, 215 + Math.sin(a) * 137); ctx.stroke(); }
+    },
+    fries() {
+      plateBase();
+      const rnd = seeded(23);
+      for (let i = 0; i < 12; i++) {
+        ctx.save(); ctx.translate(205 + i * 9, 150); ctx.rotate((rnd() - 0.5) * 0.5);
+        rr(-6, -60 - rnd() * 20, 12, 90, 3); ctx.fillStyle = "#f5c542"; ctx.fill(); ctx.strokeStyle = "#d99a2b"; ctx.lineWidth = 1.5; ctx.stroke();
+        ctx.restore();
+      }
+      ctx.beginPath(); ctx.moveTo(190, 150); ctx.lineTo(320, 150); ctx.lineTo(300, 290); ctx.lineTo(210, 290); ctx.closePath(); ctx.fillStyle = "#e8463a"; ctx.fill();
+      ctx.fillStyle = "#ffffff"; ctx.font = '26px "Jua", system-ui, sans-serif'; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText("고모리", 255, 220);
+      ctx.beginPath(); ctx.ellipse(370, 260, 36, 16, 0, 0, Math.PI * 2); ctx.fillStyle = "#ffffff"; ctx.fill(); ctx.strokeStyle = "#c6e2d7"; ctx.lineWidth = 2; ctx.stroke();
+      ctx.beginPath(); ctx.ellipse(370, 258, 26, 10, 0, 0, Math.PI * 2); ctx.fillStyle = "#d8432f"; ctx.fill();
+    },
+    cake() {
+      plateBase();
+      rr(150, 140, 200, 120, 14); ctx.fillStyle = "#fffaf4"; ctx.fill(); ctx.strokeStyle = "#f1d9c9"; ctx.lineWidth = 3; ctx.stroke();
+      ctx.fillStyle = "#e9c48b"; ctx.fillRect(152, 175, 196, 14); ctx.fillRect(152, 215, 196, 14);
+      ctx.fillStyle = "#f6c1cc"; ctx.fillRect(152, 189, 196, 8);
+      for (let i = 0; i < 5; i++) { ctx.beginPath(); ctx.arc(170 + i * 40, 142, 10, 0, Math.PI * 2); ctx.fillStyle = "#ffffff"; ctx.fill(); }
+      [190, 250, 310].forEach(x => drawItem("strawberry", x, 120));
+    },
+    salad() {
+      ctx.beginPath(); ctx.arc(250, 212, 160, 0, Math.PI * 2); ctx.fillStyle = "#8cc6dd"; ctx.fill();
+      ctx.save(); ctx.translate(0, 2); drawPlaceBase("salad"); ctx.restore();
+      PLACE.salad.spots.forEach(([x, y, k]) => drawItem(k, x, y));
+    },
   };
 
   // ================= recipes =================
@@ -724,6 +1087,20 @@
       steps: () => [makeChop(CHOP.fishcake), makeHeat(HEAT.pot), makePour(POUR.sauce), makeStir(STIR.tteok)] },
     { id: "pancake", name: "팬케이크", level: "보통",
       steps: () => [makeEgg(1), makePour(POUR.milk), makeStir(STIR.batter), makeHeat(HEAT.griddle)] },
+    { id: "ramen", name: "라면", level: "쉬움",
+      steps: () => [makeChop(CHOP.onion), makeHeat(HEAT.pot), makeStir(STIR.ramen), makeEgg(1)] },
+    { id: "salad", name: "과일 요거트", level: "쉬움",
+      steps: () => [makeChop(CHOP.banana), makePour(POUR.yogurt), makeStir(STIR.salad), makePlace(PLACE.salad)] },
+    { id: "gimbap", name: "김밥", level: "보통",
+      steps: () => [makeChop(CHOP.carrot), makePlace(PLACE.gimbap), makeRoll(), makeChop(CHOP.gimbap)] },
+    { id: "omurice", name: "오므라이스", level: "보통",
+      steps: () => [makeChop(CHOP.onionWhite), makeStir(STIR.omurice), makeEgg(2), makeRub(RUB.ketchup)] },
+    { id: "pizza", name: "피자", level: "보통",
+      steps: () => [makeStir(STIR.dough), makeChop(CHOP.pepper), makePlace(PLACE.pizza), makeHeat(HEAT.ovenPizza)] },
+    { id: "fries", name: "감자튀김", level: "어려움",
+      steps: () => [makeRub(RUB.peel), makeChop(CHOP.potato), makeHeat(HEAT.oil), makeRub(RUB.salt)] },
+    { id: "cake", name: "딸기 케이크", level: "어려움",
+      steps: () => [makeEgg(2), makeStir(STIR.batter), makeHeat(HEAT.ovenCake), makePlace(PLACE.cake)] },
   ];
   RECIPES.forEach(r => { r.blurb = r.steps().map(s => s.name).join(" · "); });
 
@@ -742,11 +1119,11 @@
 
   function drawThumb(canvas, id) {
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    canvas.width = 56 * dpr; canvas.height = 56 * dpr;
+    canvas.width = 48 * dpr; canvas.height = 48 * dpr;
     const c = canvas.getContext("2d");
     const saved = ctx; ctx = c;
-    const k = (56 * dpr) / 390;
-    c.setTransform(k, 0, 0, k, 28 * dpr - 250 * k, 28 * dpr - 220 * k);
+    const k = (48 * dpr) / 360;
+    c.setTransform(k, 0, 0, k, 24 * dpr - 250 * k, 24 * dpr - 214 * k);
     DISHES[id]();
     ctx = saved;
   }
@@ -757,11 +1134,11 @@
     recipeEl.textContent = "메뉴를 골라 주세요";
     say("오늘은 뭘 만들어 볼까요? 먹고 싶은 요리를 골라 주세요.", "happy");
     const best = loadBest();
-    show('<div class="card wide"><div class="eyebrow">메뉴판</div><h2>무엇을 만들까요?</h2><div class="menu">' +
+    show('<div class="card menu-card"><div class="eyebrow">메뉴판 · ' + RECIPES.length + '가지 요리</div><h2>무엇을 만들까요?</h2><div class="menu">' +
       RECIPES.map(r =>
         '<button type="button" class="dish" id="dish-' + r.id + '"><canvas data-id="' + r.id + '" aria-hidden="true"></canvas>' +
-        '<span><span class="dish-name">' + r.name + '</span><span class="dish-steps">' + r.blurb + "</span></span>" +
-        '<span class="dish-best">' + r.level + "<b>" + (best[r.id] != null ? "최고 " + best[r.id] : "도전!") + "</b></span></button>"
+        '<span><span class="dish-name">' + r.name + '</span><span class="dish-meta">' + r.level + " · " +
+        (best[r.id] != null ? "최고 <b>" + best[r.id] + "</b>" : "도전!") + "</span></span></button>"
       ).join("") + "</div></div>");
     ov.querySelectorAll(".dish canvas").forEach(c => drawThumb(c, c.dataset.id));
     RECIPES.forEach(r => on("dish-" + r.id, () => startRecipe(r)));
