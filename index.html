@@ -42,6 +42,10 @@
   .top { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
   .brand { font-family: var(--font-display); font-size: 1.6rem; line-height: 1; }
   .recipe { color: var(--ink-soft); font-size: 0.95rem; }
+  .top-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .music-btn { font-size: 0.9rem; padding: 6px 12px; border-radius: 999px; color: var(--ink-soft); background: var(--card); border: 2px solid var(--tile-line); box-shadow: none; }
+  .music-btn.on { color: var(--ink); border-color: var(--ink); }
+  .music-btn:active { transform: none; box-shadow: none; }
   .steps { list-style: none; margin: 0; padding: 0; display: flex; gap: 6px; }
   .steps li {
     font-family: var(--font-display); font-size: 0.85rem;
@@ -142,7 +146,10 @@
       <div class="brand">고모리 키친</div>
       <div class="recipe" id="recipe">메뉴를 골라 주세요</div>
     </div>
-    <ol class="steps" id="steps"></ol>
+    <div class="top-right">
+      <ol class="steps" id="steps"></ol>
+      <button id="btn-music" class="music-btn" type="button" aria-pressed="true">♪ 재즈 켜짐</button>
+    </div>
   </header>
 
   <div class="stage-wrap">
@@ -187,9 +194,15 @@
 
   // ---------- sound (starts only after a tap) ----------
   let actx = null;
+  try { if (navigator.audioSession) navigator.audioSession.type = "playback"; } catch (e) {}
+  function getCtx() {
+    actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+    if (actx.state === "suspended") actx.resume();
+    return actx;
+  }
   function beep(freq = 660, dur = 0.08, type = "sine", vol = 0.08) {
     try {
-      actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+      getCtx();
       const o = actx.createOscillator(), g = actx.createGain();
       o.type = type; o.frequency.value = freq;
       g.gain.setValueAtTime(vol, actx.currentTime);
@@ -1585,6 +1598,168 @@
     requestAnimationFrame(frame);
   }
   requestAnimationFrame(frame);
+
+  // ---------- background music: breezy jazz, played live with Web Audio ----------
+  const music = (() => {
+    let on = true;
+    try { on = localStorage.getItem("gomori-music") !== "off"; } catch (e) {}
+    let playing = false, timer = null, master = null, noiseBuf = null, windGain = null, windFilter = null;
+    let nextTime = 0, eighth = 0, bar = 0, melodyNote = 76;
+    const BPM = 86, BEAT = 60 / BPM, SWING = 0.66;
+    const mtof = m => 440 * Math.pow(2, (m - 69) / 12);
+    // ii-V-I in C with a turnaround: Dm9 G13 Cmaj9 Am9 Fmaj9 Em7 Dm9 G9sus
+    const CHORDS = [
+      { root: 50, v: [53, 57, 60, 64] }, { root: 43, v: [53, 59, 64] },
+      { root: 48, v: [52, 55, 59, 62] }, { root: 45, v: [55, 60, 64, 71] },
+      { root: 41, v: [52, 57, 60, 67] }, { root: 40, v: [50, 55, 59, 64] },
+      { root: 50, v: [53, 57, 60, 64] }, { root: 43, v: [53, 57, 60, 62] },
+    ];
+    const PENTA = [72, 74, 76, 79, 81, 84, 86];
+
+    function env(g, t, peak, attack, decay) {
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(peak, t + attack);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + attack + decay);
+    }
+    function epiano(m, t, vel) {
+      const c = actx, g = c.createGain(), f = c.createBiquadFilter();
+      f.type = "lowpass"; f.frequency.value = 2200;
+      [[1, 1], [2, 0.18], [3.01, 0.05]].forEach(([mul, amp]) => {
+        const o = c.createOscillator(), og = c.createGain();
+        o.type = "sine"; o.frequency.value = mtof(m) * mul; og.gain.value = amp;
+        o.connect(og).connect(f); o.start(t); o.stop(t + 2.2);
+      });
+      f.connect(g).connect(master);
+      env(g, t, vel, 0.015, 1.9);
+    }
+    function bass(m, t) {
+      const c = actx, o = c.createOscillator(), g = c.createGain(), f = c.createBiquadFilter();
+      o.type = "triangle"; o.frequency.value = mtof(m);
+      f.type = "lowpass"; f.frequency.value = 700;
+      o.connect(f).connect(g).connect(master);
+      env(g, t, 0.22, 0.01, BEAT * 0.95);
+      o.start(t); o.stop(t + BEAT + 0.1);
+    }
+    function vibes(m, t) {
+      const c = actx, o = c.createOscillator(), o2 = c.createOscillator(), g = c.createGain(), trem = c.createOscillator(), tg = c.createGain(), out = c.createGain();
+      o.type = "sine"; o.frequency.value = mtof(m);
+      o2.type = "sine"; o2.frequency.value = mtof(m) * 4; const g2 = c.createGain(); g2.gain.value = 0.06;
+      trem.frequency.value = 5.2; tg.gain.value = 0.35; out.gain.value = 0.65;
+      trem.connect(tg).connect(out.gain);
+      o.connect(g); o2.connect(g2).connect(g);
+      g.connect(out).connect(master);
+      env(g, t, 0.075, 0.008, 1.6);
+      [o, o2, trem].forEach(x => { x.start(t); x.stop(t + 1.8); });
+    }
+    function noise(t, dur, freq, q, peak, type = "bandpass") {
+      const c = actx, s = c.createBufferSource(), f = c.createBiquadFilter(), g = c.createGain();
+      s.buffer = noiseBuf; f.type = type; f.frequency.value = freq; f.Q.value = q;
+      s.connect(f).connect(g).connect(master);
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(peak, t + dur * 0.4);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      s.start(t, Math.random()); s.stop(t + dur + 0.05);
+    }
+    function startWind() {
+      const c = actx, s = c.createBufferSource();
+      s.buffer = noiseBuf; s.loop = true;
+      windFilter = c.createBiquadFilter(); windFilter.type = "bandpass"; windFilter.frequency.value = 600; windFilter.Q.value = 0.8;
+      windGain = c.createGain(); windGain.gain.value = 0.02;
+      const lfo = c.createOscillator(), lg = c.createGain();
+      lfo.frequency.value = 0.07; lg.gain.value = 350;
+      lfo.connect(lg).connect(windFilter.frequency);
+      s.connect(windFilter).connect(windGain).connect(master);
+      s.start(); lfo.start();
+    }
+    function gust(t) {
+      // a breeze passing through: swell up, sweep the filter, fade away
+      windGain.gain.setTargetAtTime(0.07, t, 1.2);
+      windGain.gain.setTargetAtTime(0.02, t + 3.5, 1.8);
+      windFilter.Q.setTargetAtTime(2.2, t, 1.5);
+      windFilter.Q.setTargetAtTime(0.8, t + 4, 2);
+    }
+    function scheduleEighth(t) {
+      const ch = CHORDS[bar % CHORDS.length], nx = CHORDS[(bar + 1) % CHORDS.length];
+      const beat = eighth >> 1, off = eighth & 1;
+      if (!off) {
+        const walk = [ch.root, ch.root + 7, ch.root + 5, nx.root + (Math.random() < 0.5 ? 1 : -1)];
+        bass(walk[beat], t);
+      }
+      if (eighth === 0) ch.v.forEach((m, i) => epiano(m, t + i * 0.012, 0.045));
+      if (eighth === 3 && Math.random() < 0.7) ch.v.forEach(m => epiano(m, t, 0.028));
+      if (eighth === 2 || eighth === 6) noise(t, 0.22, 2800, 0.7, 0.035);
+      noise(t, 0.06, 7000, 1, off ? 0.012 : 0.007, "highpass");
+      if (Math.random() < (off ? 0.18 : 0.26)) {
+        let i = PENTA.indexOf(melodyNote);
+        i = clamp(i + [-2, -1, -1, 1, 1, 2][Math.floor(Math.random() * 6)], 0, PENTA.length - 1);
+        melodyNote = PENTA[i];
+        vibes(melodyNote, t);
+      }
+      if (eighth === 0 && bar % 4 === 2) gust(t);
+    }
+    function tick() {
+      while (nextTime < actx.currentTime + 0.25) {
+        scheduleEighth(nextTime);
+        const beatStart = nextTime - ((eighth & 1) ? BEAT * SWING : 0);
+        if (eighth & 1) nextTime = beatStart + BEAT;
+        else nextTime += BEAT * SWING;
+        eighth++;
+        if (eighth === 8) { eighth = 0; bar++; }
+      }
+    }
+    function start() {
+      if (playing || !on) return;
+      getCtx();
+      if (!noiseBuf) {
+        noiseBuf = actx.createBuffer(1, actx.sampleRate * 2, actx.sampleRate);
+        const d = noiseBuf.getChannelData(0);
+        for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+      }
+      if (!master) {
+        const comp = actx.createDynamicsCompressor();
+        master = actx.createGain(); master.gain.value = 0.0001;
+        master.connect(comp).connect(actx.destination);
+        startWind();
+      }
+      master.gain.cancelScheduledValues(actx.currentTime);
+      master.gain.setTargetAtTime(0.55, actx.currentTime, 0.8);
+      nextTime = actx.currentTime + 0.1; eighth = 0;
+      timer = setInterval(tick, 60);
+      playing = true;
+    }
+    function stop() {
+      if (!playing) return;
+      clearInterval(timer); timer = null; playing = false;
+      master.gain.cancelScheduledValues(actx.currentTime);
+      master.gain.setTargetAtTime(0.0001, actx.currentTime, 0.3);
+    }
+    function setOn(v) {
+      on = v;
+      try { localStorage.setItem("gomori-music", v ? "on" : "off"); } catch (e) {}
+      v ? start() : stop();
+    }
+    document.addEventListener("visibilitychange", () => {
+      if (!actx) return;
+      if (document.hidden) actx.suspend(); else actx.resume();
+    });
+    return { start, stop, setOn, isOn: () => on };
+  })();
+
+  const musicBtn = document.getElementById("btn-music");
+  function renderMusicBtn() {
+    musicBtn.textContent = music.isOn() ? "♪ 재즈 켜짐" : "♪ 재즈 꺼짐";
+    musicBtn.setAttribute("aria-pressed", String(music.isOn()));
+    musicBtn.classList.toggle("on", music.isOn());
+  }
+  musicBtn.addEventListener("click", () => { music.setOn(!music.isOn()); renderMusicBtn(); });
+  renderMusicBtn();
+  // browsers only allow sound after the first touch, so start the music then
+  function firstGesture(e) {
+    if (e.target === musicBtn) return;
+    ["pointerdown", "touchend", "click"].forEach(t => document.removeEventListener(t, firstGesture, true));
+    music.start();
+  }
+  ["pointerdown", "touchend", "click"].forEach(t => document.addEventListener(t, firstGesture, true));
 
   menu();
 })();
