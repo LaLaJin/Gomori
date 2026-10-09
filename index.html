@@ -103,8 +103,12 @@
   .btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
   .btn-row button { flex: 1 1 140px; }
 
-  .card.menu-card { width: min(100%, 540px); padding: 16px; gap: 8px; }
-  .menu { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 8px; }
+  .card.menu-card { width: min(100%, 600px); padding: 16px; gap: 8px; }
+  .menu { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; }
+  .chips { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; }
+  .chip { font-size: 0.95rem; padding: 6px 14px; border-radius: 999px; color: var(--ink); background: var(--card); border: 2px solid var(--tile-line); box-shadow: none; }
+  .chip.on { background: var(--ink); border-color: var(--ink); color: var(--card); }
+  .chip:active { transform: none; box-shadow: none; }
   .dish {
     display: grid; grid-template-columns: 48px 1fr; align-items: center; gap: 10px;
     text-align: left; color: var(--ink); background: var(--card);
@@ -257,6 +261,10 @@
 
   // ---------- chop: swipe down along dotted lines ----------
   const CHOP = {
+    tomato: { name: "토마토 썰기", intro: "점선 위를 위에서 아래로 쓱 그어서 토마토를 썰어요. 점선에 가까울수록 점수가 높아요.",
+      stops: [[0, "#ff7a6b"], [1, "#e8384f"]], edge: "#b52a3a", h: 66, roots: false },
+    cabbage: { name: "배추 썰기", intro: "점선 위를 위에서 아래로 쓱 그어서 배추를 썰어요. 만두 속에 들어갈 거예요.",
+      stops: [[0, "#f4fbe9"], [0.5, "#d2ecb0"], [1, "#8fcf6a"]], edge: "#6aa34a", h: 64, roots: false },
     onion: { name: "대파 썰기", intro: "점선 위를 위에서 아래로 쓱 그어서 대파를 썰어요. 점선에 가까울수록 점수가 높아요.",
       stops: [[0, "#f6fbf2"], [0.18, "#d9efc0"], [0.35, "#7cc46a"], [1, "#3f9a4f"]], edge: "#2f7a3e", h: 38, roots: true },
     fishcake: { name: "어묵 썰기", intro: "점선 위를 위에서 아래로 쓱 그어서 어묵을 썰어요. 점선에 가까울수록 점수가 높아요.",
@@ -428,6 +436,7 @@
     griddle: { name: "팬케이크 굽기", vessel: "pan", food: "pancake", intro: "누르면 불이 세지고, 떼면 약해져요. 초록 칸 안에 오래 있을수록 노릇노릇하게 구워져요." },
     oil: { name: "기름 온도 맞추기", vessel: "oil", intro: "꾹 누르면 불이 세지고, 떼면 약해져요. 바삭하게 튀기려면 기름 온도를 초록 칸 안에 8초 동안 지켜 주세요." },
     ovenPizza: { name: "오븐에 굽기", vessel: "oven", food: "pizza", intro: "꾹 누르면 오븐이 뜨거워지고, 떼면 식어요. 초록 칸 안에 오래 있을수록 치즈가 맛있게 녹아요." },
+    ovenCookie: { name: "오븐에 굽기", vessel: "oven", food: "cookie", intro: "꾹 누르면 오븐이 뜨거워지고, 떼면 식어요. 초록 칸 안에 오래 있을수록 쿠키가 바삭하게 구워져요." },
     ovenCake: { name: "오븐에 굽기", vessel: "oven", food: "cake", intro: "꾹 누르면 오븐이 뜨거워지고, 떼면 식어요. 초록 칸 안에 오래 있을수록 빵이 폭신하게 부풀어요." },
   };
   function makeHeat(cfg) {
@@ -472,6 +481,8 @@
             ctx.beginPath(); ctx.ellipse(230, 262, 110, 26, 0, 0, Math.PI * 2); ctx.fillStyle = mixColor("#f3d9a4", "#d9963f", cook); ctx.fill();
             ctx.beginPath(); ctx.ellipse(230, 259, 96, 20, 0, 0, Math.PI * 2); ctx.fillStyle = mixColor("#fff3c4", "#f4b942", cook); ctx.fill();
             for (let i = 0; i < 6; i++) { ctx.beginPath(); ctx.ellipse(170 + i * 24, 256 + (i % 2) * 8, 10, 4, 0, 0, Math.PI * 2); ctx.fillStyle = "#c8402c"; ctx.fill(); }
+          } else if (cfg.food === "cookie") {
+            [150, 200, 250, 300].forEach((x, i) => { ctx.beginPath(); ctx.ellipse(x + 15, 266, 22, 9, 0, 0, Math.PI * 2); ctx.fillStyle = mixColor("#f1d79c", "#c98a3a", cook); ctx.fill(); ctx.beginPath(); ctx.arc(x + 10 + (i % 2) * 8, 264, 3, 0, Math.PI * 2); ctx.fillStyle = "#5a3422"; ctx.fill(); });
           } else {
             const rise = 18 + cook * 22;
             rr(160, 278 - rise - 20, 140, rise + 20, 12); ctx.fillStyle = mixColor("#f7e7b0", "#d99a45", cook); ctx.fill();
@@ -528,6 +539,8 @@
 
   // ---------- pour: hold to pour, stop at the line ----------
   const POUR = {
+    chocolate: { name: "초코 소스 붓기", intro: "꾹 누르면 초코 소스가 부어져요. 초록 선 사이에서 손을 떼세요. 손을 떼도 조금 더 흘러요!",
+      liquid: "#5a3422", liquidEdge: "#3e2216", jug: "#e8d5b5", lo: 0.4, hi: 0.52, item: "초코 소스" },
     milk: { name: "우유 붓기", intro: "화면을 꾹 누르면 우유가 부어져요. 초록 선 사이에서 손을 떼세요. 손을 떼도 조금 더 흘러요!",
       liquid: "#fbfbf6", liquidEdge: "#d9dcd2", jug: "#7fb8d6", lo: 0.55, hi: 0.68, item: "우유" },
     sauce: { name: "소스 붓기", intro: "화면을 꾹 누르면 빨간 떡볶이 소스가 부어져요. 초록 선 사이에서 손을 떼세요.",
@@ -609,6 +622,12 @@
     tteok: { c0: "#fbf6ec", c1: "#e5533b" },
     fishcake: { c0: "#ecc78f", c1: "#d9773f" },
     lump: { c0: "#fffdf6", c1: "#fff3cf" },
+    seaweedFlake: { c0: "#1f3324", c1: "#1f3324" },
+    meat: { c0: "#d49a8c", c1: "#9a5a44" },
+    cabbageBit: { c0: "#a8d68a", c1: "#a8d68a" },
+    tofu: { c0: "#fbf8ee", c1: "#fbf8ee" },
+    potatoCube: { c0: "#f6e3a6", c1: "#e9b84a" },
+    carrotCube: { c0: "#f2832f", c1: "#e9772a" },
     noodle: { c0: "#f2e1a6", c1: "#f5c95a" },
     ham: { c0: "#f4a6a0", c1: "#ee8c84" },
     ketchupRice: { c0: "#fffaf0", c1: "#e4643f" },
@@ -617,6 +636,14 @@
     kiwi: { c0: "#7cc46a", c1: "#7cc46a" },
   };
   const STIR = {
+    riceMix: { name: "밥 섞기", vessel: "bowl", inner: ["#fbfaf3", "#fbfaf3"], bits: [[140, "rice"], [40, "seaweedFlake"]], need: 4,
+      intro: "그릇 안에서 빙글빙글 네 바퀴 저어서 밥과 김가루를 섞어요." },
+    filling: { name: "만두소 섞기", vessel: "bowl", inner: ["#f3e6dc", "#e8d2c2"], bits: [[50, "meat"], [26, "cabbageBit"], [16, "tofu"]], need: 5,
+      intro: "그릇 안에서 빙글빙글 다섯 바퀴 저어서 고기, 배추, 두부를 섞어요." },
+    curry: { name: "카레 젓기", vessel: "pot", inner: ["#f6e2b5", "#c98a1f"], bits: [[20, "potatoCube"], [16, "carrotCube"], [14, "meat"]], need: 5,
+      intro: "냄비 안에서 빙글빙글 다섯 바퀴 저어서 카레가 눌어붙지 않게 해요." },
+    jeonBatter: { name: "부침 반죽 섞기", vessel: "bowl", inner: ["#f7ecc8", "#efd98f"], bits: [[40, "lump"], [22, "onion"]], need: 5,
+      intro: "그릇 안에서 빙글빙글 다섯 바퀴 저어서 반죽과 대파를 섞어요." },
     rice: { name: "밥 볶기", vessel: "pan", inner: ["#4a5754", "#4a5754"], bits: [[170, "rice"], [26, "egg"], [22, "onion"]], need: 5,
       intro: "팬 안에서 손가락으로 빙글빙글 원을 그리며 볶아요. 다섯 바퀴를 빨리 돌릴수록 점수가 높아요." },
     tteok: { name: "떡 볶기", vessel: "pan", inner: ["#f1e4cf", "#c93a27"], bits: [[24, "tteok"], [14, "fishcake"], [18, "onion"]], need: 5,
@@ -701,6 +728,11 @@
           else if (b.kind === "bananaSlice") { ctx.beginPath(); ctx.arc(0, 0, 9, 0, Math.PI * 2); ctx.fill(); ctx.strokeStyle = "#e9cf6a"; ctx.lineWidth = 1.5; ctx.stroke(); }
           else if (b.kind === "berry") { drawItem("strawberry", 0, 0, 0.7); }
           else if (b.kind === "kiwi") { ctx.beginPath(); ctx.arc(0, 0, 9, 0, Math.PI * 2); ctx.fill(); ctx.beginPath(); ctx.arc(0, 0, 3, 0, Math.PI * 2); ctx.fillStyle = "#eef7d8"; ctx.fill(); ctx.fillStyle = "#1d2420"; for (let i = 0; i < 6; i++) { ctx.beginPath(); ctx.arc(Math.cos(i) * 5.5, Math.sin(i) * 5.5, 0.9, 0, Math.PI * 2); ctx.fill(); } }
+          else if (b.kind === "seaweedFlake") { rr(-3, -3, 6, 6, 1); ctx.fill(); }
+          else if (b.kind === "meat") { ctx.beginPath(); ctx.ellipse(0, 0, 6, 4, 0, 0, Math.PI * 2); ctx.fill(); }
+          else if (b.kind === "cabbageBit") { rr(-6, -3, 12, 6, 2); ctx.fill(); }
+          else if (b.kind === "tofu") { rr(-5, -5, 10, 10, 1); ctx.fill(); ctx.strokeStyle = "#e5e0cf"; ctx.lineWidth = 1; ctx.stroke(); }
+          else if (b.kind === "potatoCube" || b.kind === "carrotCube") { rr(-7, -7, 14, 14, 3); ctx.fill(); }
           else if (b.kind === "lump") { const r = 6 * (1 - prog) + 0.5; ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2); ctx.fill(); }
           ctx.restore();
         });
@@ -749,6 +781,26 @@
     } else if (kind === "blueberry") {
       ctx.beginPath(); ctx.arc(0, 0, 9, 0, Math.PI * 2); ctx.fillStyle = "#3b4fa0"; ctx.fill();
       ctx.beginPath(); ctx.arc(-3, -3, 2.5, 0, Math.PI * 2); ctx.fillStyle = "rgba(255,255,255,0.5)"; ctx.fill();
+    } else if (kind === "lettuce") {
+      ctx.beginPath(); for (let i = 0; i <= 16; i++) { const a = i / 16 * Math.PI * 2, r = 24 + (i % 2) * 5; ctx.lineTo(Math.cos(a) * r, Math.sin(a) * r); }
+      ctx.closePath(); ctx.fillStyle = "#6cc06a"; ctx.fill();
+    } else if (kind === "tomatoSlice") {
+      ctx.beginPath(); ctx.arc(0, 0, 20, 0, Math.PI * 2); ctx.fillStyle = "#e8384f"; ctx.fill();
+      ctx.beginPath(); ctx.arc(0, 0, 15, 0, Math.PI * 2); ctx.fillStyle = "#ff6f6f"; ctx.fill();
+      ctx.fillStyle = "#ffe9a8"; for (let i = 0; i < 5; i++) { ctx.beginPath(); ctx.arc(Math.cos(i * 1.26) * 8, Math.sin(i * 1.26) * 8, 2, 0, Math.PI * 2); ctx.fill(); }
+    } else if (kind === "cheese") {
+      ctx.save(); ctx.rotate(0.3); rr(-20, -20, 40, 40, 3); ctx.fillStyle = "#ffcc4d"; ctx.fill();
+      ctx.fillStyle = "#f2b632"; [[-8, -6], [8, 6], [6, -10]].forEach(([a, b]) => { ctx.beginPath(); ctx.arc(a, b, 3, 0, Math.PI * 2); ctx.fill(); }); ctx.restore();
+    } else if (kind === "ham") {
+      ctx.beginPath(); ctx.arc(0, 0, 21, 0, Math.PI * 2); ctx.fillStyle = "#f4a6a0"; ctx.fill(); ctx.strokeStyle = "#e48a84"; ctx.lineWidth = 3; ctx.stroke();
+    } else if (kind === "cherry") {
+      ctx.beginPath(); ctx.moveTo(0, -6); ctx.quadraticCurveTo(4, -20, 12, -24); ctx.strokeStyle = "#5a7a2a"; ctx.lineWidth = 2.5; ctx.stroke();
+      ctx.beginPath(); ctx.arc(0, 2, 11, 0, Math.PI * 2); ctx.fillStyle = "#d0233c"; ctx.fill();
+      ctx.beginPath(); ctx.arc(-4, -2, 3, 0, Math.PI * 2); ctx.fillStyle = "rgba(255,255,255,0.5)"; ctx.fill();
+    } else if (kind === "bananaPiece") {
+      ctx.beginPath(); ctx.arc(0, 0, 13, 0, Math.PI * 2); ctx.fillStyle = "#fff1a8"; ctx.fill(); ctx.strokeStyle = "#e9cf6a"; ctx.lineWidth = 2; ctx.stroke();
+    } else if (kind === "chocoChip") {
+      ctx.beginPath(); ctx.moveTo(0, -9); ctx.quadraticCurveTo(9, 6, 0, 7); ctx.quadraticCurveTo(-9, 6, 0, -9); ctx.fillStyle = "#5a3422"; ctx.fill();
     } else if (STRIP[kind]) {
       rr(-125, -8, 250, 16, 8); ctx.fillStyle = STRIP[kind]; ctx.fill();
     }
@@ -766,6 +818,14 @@
 
   // ---------- place: tap the faded spots to put toppings on ----------
   const PLACE = {
+    burger: { name: "재료 쌓기", base: "burger", intro: "패티 위 흐릿한 자리를 톡톡 눌러 치즈, 양상추, 토마토를 올려요.",
+      spots: [[250, 210, "cheese"], [175, 165, "lettuce"], [325, 165, "lettuce"], [175, 255, "tomatoSlice"], [325, 255, "tomatoSlice"], [250, 130, "tomatoSlice"], [250, 290, "lettuce"]] },
+    sandwich: { name: "샌드위치 재료 올리기", base: "sandwich", intro: "식빵 위 흐릿한 자리를 톡톡 눌러 햄, 치즈, 양상추, 토마토를 올려요.",
+      spots: [[200, 160, "ham"], [300, 160, "cheese"], [200, 260, "lettuce"], [300, 260, "tomatoSlice"], [250, 210, "tomatoSlice"]] },
+    sundae: { name: "체리 올리기", base: "sundae", intro: "아이스크림 위 흐릿한 자리를 톡톡 눌러 체리와 바나나를 올려요.",
+      spots: [[250, 150, "cherry"], [185, 230, "cherry"], [315, 230, "cherry"], [190, 170, "bananaPiece"], [310, 170, "bananaPiece"], [250, 270, "bananaPiece"], [250, 215, "bananaPiece"]] },
+    cookie: { name: "초코칩 올리기", base: "cookie", intro: "쿠키 반죽 위 흐릿한 자리를 톡톡 눌러 초코칩을 올려요.",
+      spots: [[150, 160], [250, 160], [350, 160], [150, 270], [250, 270], [350, 270], [200, 215], [300, 215]].map(([x, y]) => [x, y, "chocoChip"]) },
     pizza: { name: "토핑 올리기", base: "pizza", intro: "흐릿하게 보이는 자리를 톡톡 눌러 토핑을 올려요. 자리 한가운데를 누를수록 점수가 높아요.",
       spots: [[250, 205, "pepperoni"], [180, 160, "pepperoni"], [320, 160, "pepperoni"], [180, 255, "pepperoni"], [320, 255, "pepperoni"],
               [250, 125, "pepperRing"], [250, 285, "pepperRing"], [140, 205, "mushroom"], [360, 205, "mushroom"]] },
@@ -777,7 +837,25 @@
       spots: [[200, 160], [300, 160], [160, 220], [340, 220], [210, 270], [290, 270], [250, 210]].map(([x, y]) => [x, y, "blueberry"]) },
   };
   function drawPlaceBase(base) {
-    if (base === "pizza") {
+    if (base === "burger") {
+      ctx.beginPath(); ctx.arc(250, 210, 160, 0, Math.PI * 2); ctx.fillStyle = "#e7a64f"; ctx.fill();
+      ctx.beginPath(); ctx.arc(250, 210, 140, 0, Math.PI * 2); ctx.fillStyle = "#f4cf8a"; ctx.fill();
+      ctx.beginPath(); ctx.arc(250, 210, 125, 0, Math.PI * 2); ctx.fillStyle = "#6b3b26"; ctx.fill();
+      ctx.strokeStyle = "rgba(40,20,10,0.5)"; ctx.lineWidth = 5;
+      for (let i = -3; i <= 3; i++) { ctx.beginPath(); ctx.moveTo(250 + i * 32 - 30, 130); ctx.lineTo(250 + i * 32 + 30, 290); ctx.stroke(); }
+    } else if (base === "sandwich") {
+      rr(110, 80, 280, 260, 34); ctx.fillStyle = "#e9c27a"; ctx.fill();
+      rr(124, 94, 252, 232, 26); ctx.fillStyle = "#fbf1d6"; ctx.fill();
+    } else if (base === "sundae") {
+      ctx.beginPath(); ctx.arc(250, 210, 160, 0, Math.PI * 2); ctx.fillStyle = "#cfe7f2"; ctx.fill();
+      [[200, 190, "#fff6e6"], [300, 190, "#f6c1cc"], [250, 255, "#8a5a3a"]].forEach(([x, y, c]) => { ctx.beginPath(); ctx.arc(x, y, 62, 0, Math.PI * 2); ctx.fillStyle = c; ctx.fill(); });
+      ctx.strokeStyle = "#5a3422"; ctx.lineWidth = 7; ctx.lineCap = "round";
+      ctx.beginPath(); for (let i = 0; i <= 12; i++) ctx.lineTo(150 + i * 17, 200 + Math.sin(i * 1.3) * 30); ctx.stroke();
+    } else if (base === "cookie") {
+      rr(70, 90, 360, 240, 10); ctx.fillStyle = "#b9c9c6"; ctx.fill();
+      [[150, 160], [250, 160], [350, 160], [150, 270], [250, 270], [350, 270]].forEach(([x, y]) => { ctx.beginPath(); ctx.arc(x, y, 40, 0, Math.PI * 2); ctx.fillStyle = "#f1d79c"; ctx.fill(); });
+      [[200, 215], [300, 215]].forEach(([x, y]) => { ctx.beginPath(); ctx.arc(x, y, 30, 0, Math.PI * 2); ctx.fillStyle = "#f1d79c"; ctx.fill(); });
+    } else if (base === "pizza") {
       ctx.beginPath(); ctx.arc(250, 205, 155, 0, Math.PI * 2); ctx.fillStyle = "#e9b872"; ctx.fill();
       ctx.beginPath(); ctx.arc(250, 205, 135, 0, Math.PI * 2); ctx.fillStyle = "#d8432f"; ctx.fill();
       const rnd = seeded(3);
@@ -968,6 +1046,167 @@
     };
   }
 
+  // ---------- flip: tap in the green to flip the food in the pan ----------
+  const FLIP = {
+    friedEgg: { name: "계란 뒤집기", food: "friedEgg", count: 1, raw: "#fbfaf3", done: "#fbfaf3",
+      intro: "바늘이 초록 칸 한가운데 올 때 톡 눌러서 계란을 뒤집어요." },
+    hotteok: { name: "호떡 뒤집기", food: "hotteok", count: 2, raw: "#f3dca6", done: "#c98a3a",
+      intro: "바늘이 초록 칸 한가운데 올 때 톡 눌러서 호떡을 뒤집어요. 두 번 뒤집어요." },
+    jeon: { name: "파전 뒤집기", food: "jeon", count: 2, raw: "#efdc9a", done: "#cf9a3c",
+      intro: "바늘이 초록 칸 한가운데 올 때 톡 눌러서 파전을 뒤집어요. 두 번 뒤집어요." },
+    patty: { name: "패티 뒤집기", food: "patty", count: 2, raw: "#d48c7e", done: "#6b3b26",
+      intro: "바늘이 초록 칸 한가운데 올 때 톡 눌러서 고기 패티를 뒤집어요. 두 번 뒤집어요." },
+  };
+  function drawFood(food, color, y, sy, cooked) {
+    ctx.save(); ctx.translate(230, y); ctx.scale(1, Math.max(0.08, sy));
+    const rx = food === "jeon" ? 105 : food === "friedEgg" ? 70 : 72;
+    ctx.beginPath(); ctx.ellipse(0, 0, rx, 24, 0, 0, Math.PI * 2); ctx.fillStyle = color; ctx.fill();
+    if (food === "friedEgg") {
+      ctx.beginPath(); ctx.ellipse(6, -2, 22, 12, 0, 0, Math.PI * 2); ctx.fillStyle = cooked ? "#ffc23d" : "#ffb627"; ctx.fill();
+    } else if (food === "jeon") {
+      ctx.strokeStyle = "#3f9a4f"; ctx.lineWidth = 4; ctx.lineCap = "round";
+      for (let i = 0; i < 6; i++) { ctx.beginPath(); ctx.moveTo(-80 + i * 30, -8 + (i % 2) * 10); ctx.lineTo(-58 + i * 30, -12 + (i % 2) * 10); ctx.stroke(); }
+    } else if (food === "patty" && cooked) {
+      ctx.strokeStyle = "rgba(40,20,10,0.5)"; ctx.lineWidth = 4;
+      for (let i = -2; i <= 2; i++) { ctx.beginPath(); ctx.moveTo(i * 22 - 12, -14); ctx.lineTo(i * 22 + 12, 14); ctx.stroke(); }
+    } else if (food === "hotteok" && cooked) {
+      ctx.beginPath(); ctx.ellipse(0, 0, 40, 10, 0, 0, Math.PI * 2); ctx.fillStyle = "rgba(120,70,20,0.35)"; ctx.fill();
+    }
+    ctx.restore();
+  }
+  function makeFlip(cfg) {
+    let idx, phase, swing, pos, anim, scores, side;
+    return {
+      name: cfg.name, intro: cfg.intro,
+      init() { idx = 0; phase = "aim"; swing = 0; pos = 0; anim = 0; scores = []; side = 0; },
+      update(dt) {
+        if (phase === "aim") { swing += dt * (2.4 + idx * 1.0); pos = (Math.sin(swing) + 1) / 2; }
+        else if (phase === "flip") {
+          anim += dt;
+          if (anim > 0.8) {
+            side++; idx++;
+            if (idx >= cfg.count) { phase = "end"; finish(Math.round(scores.reduce((a, b) => a + b, 0) / cfg.count)); }
+            else { phase = "aim"; swing = Math.random() * 6; }
+          }
+        }
+      },
+      down() {
+        if (phase !== "aim") return;
+        const d = Math.abs(pos - 0.5);
+        const s = Math.round(clamp(100 - Math.max(0, d - 0.03) * 380, 0, 100));
+        scores.push(s);
+        const [txt, col] = judge(s);
+        pop(txt, 230, 140, col);
+        beep(s >= 70 ? 880 : 300, 0.09, "triangle");
+        phase = "flip"; anim = 0;
+      },
+      draw() {
+        rr(70, 286, 320, 70, 14); ctx.fillStyle = "#4d6e66"; ctx.fill();
+        const now = performance.now() / 1000;
+        for (let i = 0; i < 9; i++) {
+          const fx = 120 + i * 27, h = 34 * (0.8 + 0.25 * Math.sin(now * 14 + i * 1.7));
+          ctx.beginPath(); ctx.moveTo(fx - 9, 288); ctx.quadraticCurveTo(fx - 6, 288 - h * 0.6, fx, 288 - h); ctx.quadraticCurveTo(fx + 6, 288 - h * 0.6, fx + 9, 288); ctx.closePath();
+          ctx.fillStyle = "#4aa3ff"; ctx.fill();
+        }
+        ctx.fillStyle = "#2d3a37";
+        rr(10, 236, 90, 16, 8); ctx.fill();
+        ctx.beginPath(); ctx.ellipse(230, 250, 160, 50, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.ellipse(230, 244, 140, 38, 0, 0, Math.PI * 2); ctx.fillStyle = "#6b5550"; ctx.fill();
+        const cookedFrac = cfg.count ? side / cfg.count : 1;
+        const topColor = mixColor(cfg.raw, cfg.done, cookedFrac);
+        if (phase === "flip") {
+          const a = clamp(anim / 0.8, 0, 1), ang = a * Math.PI;
+          const y = 236 - Math.sin(a * Math.PI) * 110;
+          const nextColor = mixColor(cfg.raw, cfg.done, (side + 1) / cfg.count);
+          drawFood(cfg.food, a < 0.5 ? topColor : nextColor, y, Math.abs(Math.cos(ang)), a >= 0.5 ? side + 1 > 0 : side > 0);
+        } else {
+          drawFood(cfg.food, topColor, 236, 1, side > 0);
+        }
+        const x0 = 70, x1 = 430, y = 70;
+        rr(x0, y, x1 - x0, 24, 12); ctx.fillStyle = "#e3eee9"; ctx.fill();
+        rr(lerp(x0, x1, 0.4), y, (x1 - x0) * 0.2, 24, 6); ctx.fillStyle = "#a6dcb2"; ctx.fill();
+        rr(lerp(x0, x1, 0.47), y, (x1 - x0) * 0.06, 24, 4); ctx.fillStyle = "#4caf6a"; ctx.fill();
+        if (phase === "aim") {
+          const nx = lerp(x0, x1, pos);
+          ctx.beginPath(); ctx.moveTo(nx, y - 10); ctx.lineTo(nx - 9, y - 22); ctx.lineTo(nx + 9, y - 22); ctx.closePath();
+          ctx.fillStyle = "#ff6b4a"; ctx.fill();
+          ctx.fillRect(nx - 2, y - 10, 4, 44);
+        }
+        label("뒤집기 " + Math.min(idx + 1, cfg.count) + " / " + cfg.count, 250, 380, 20);
+      },
+    };
+  }
+
+  // ---------- squeeze: tap fast to shape the food with both hands ----------
+  const SQUEEZE = {
+    riceball: { name: "주먹밥 빚기", food: "riceball", need: 12, intro: "화면을 빠르게 톡톡톡 눌러서 밥을 꼭꼭 뭉쳐 세모 주먹밥을 만들어요. 12번!" },
+    dumpling: { name: "만두 빚기", food: "dumpling", need: 12, intro: "화면을 빠르게 톡톡톡 눌러서 만두피를 꼭꼭 접어요. 12번!" },
+    hotteok: { name: "호떡 빚기", food: "hotteok", need: 10, intro: "화면을 빠르게 톡톡톡 눌러서 설탕을 넣고 동그랗게 빚어요. 10번!" },
+    patty: { name: "패티 빚기", food: "patty", need: 10, intro: "화면을 빠르게 톡톡톡 눌러서 고기를 동글납작하게 빚어요. 10번!" },
+    cookie: { name: "쿠키 빚기", food: "cookie", need: 10, intro: "화면을 빠르게 톡톡톡 눌러서 쿠키 반죽을 동글동글 빚어요. 10번!" },
+  };
+  function drawShaped(food, cx, cy, s) {
+    ctx.save(); ctx.translate(cx, cy); ctx.scale(s, s);
+    if (food === "riceball") {
+      ctx.beginPath(); ctx.moveTo(0, -70); ctx.quadraticCurveTo(8, -74, 14, -64); ctx.lineTo(70, 40); ctx.quadraticCurveTo(74, 56, 58, 58); ctx.lineTo(-58, 58); ctx.quadraticCurveTo(-74, 56, -70, 40); ctx.lineTo(-14, -64); ctx.quadraticCurveTo(-8, -74, 0, -70);
+      ctx.fillStyle = "#fbfaf3"; ctx.fill(); ctx.strokeStyle = "#e5e0cf"; ctx.lineWidth = 3; ctx.stroke();
+      rr(-34, 14, 68, 46, 4); ctx.fillStyle = "#1f3324"; ctx.fill();
+    } else if (food === "dumpling") {
+      ctx.beginPath(); ctx.moveTo(-80, 30); ctx.quadraticCurveTo(0, -80, 80, 30); ctx.quadraticCurveTo(0, 50, -80, 30);
+      ctx.fillStyle = "#fbf6ea"; ctx.fill(); ctx.strokeStyle = "#e3d6b8"; ctx.lineWidth = 3; ctx.stroke();
+      ctx.strokeStyle = "#e3d6b8"; for (let i = -3; i <= 3; i++) { ctx.beginPath(); ctx.moveTo(i * 16, -26 + Math.abs(i) * 6); ctx.lineTo(i * 16 + 6, -10 + Math.abs(i) * 6); ctx.stroke(); }
+    } else {
+      const col = { hotteok: "#f3dca6", patty: "#d48c7e", cookie: "#e9c27a" }[food];
+      ctx.beginPath(); ctx.ellipse(0, 0, 80, 74, 0, 0, Math.PI * 2); ctx.fillStyle = col; ctx.fill();
+      ctx.strokeStyle = "rgba(0,0,0,0.12)"; ctx.lineWidth = 3; ctx.stroke();
+      if (food === "cookie") { ctx.fillStyle = "#5a3422"; [[-30, -20], [20, -30], [0, 10], [-25, 30], [30, 25]].forEach(([a, b]) => { ctx.beginPath(); ctx.arc(a, b, 7, 0, Math.PI * 2); ctx.fill(); }); }
+    }
+    ctx.restore();
+  }
+  function makeSqueeze(cfg) {
+    const LIMIT = 8;
+    let taps, t, pulse, done;
+    return {
+      name: cfg.name, intro: cfg.intro,
+      init() { taps = 0; t = 0; pulse = 0; done = false; },
+      update(dt) {
+        t += dt; pulse = Math.max(0, pulse - dt * 6);
+        if (!done && t >= LIMIT) { done = true; finish(Math.round((taps / cfg.need) * 50)); }
+      },
+      down() {
+        if (done) return;
+        taps++; pulse = 1;
+        beep(380 + taps * 25, 0.05, "triangle", 0.05);
+        if (taps % 3 === 0 && taps < cfg.need) pop(["꾹!", "꼭꼭!", "조물조물!"][(taps / 3) % 3], 250, 90, "#d49a00");
+        if (taps >= cfg.need) { done = true; finish(t <= 4 ? 100 : Math.round(clamp(100 - (t - 4) * 12, 40, 100))); }
+      },
+      draw() {
+        rr(60, 120, 380, 230, 24); ctx.fillStyle = "#e2b07a"; ctx.fill();
+        const prog = clamp(taps / cfg.need, 0, 1);
+        // shapeless lump fading into the finished shape
+        ctx.globalAlpha = 1 - prog;
+        const lump = cfg.food === "riceball" ? "#fbfaf3" : cfg.food === "dumpling" ? "#fbf6ea" : cfg.food === "patty" ? "#d48c7e" : cfg.food === "cookie" ? "#e9c27a" : "#f3dca6";
+        ctx.beginPath();
+        for (let i = 0; i <= 12; i++) { const a = i / 12 * Math.PI * 2, r = 70 + Math.sin(i * 2.3) * 14; ctx.lineTo(250 + Math.cos(a) * r, 235 + Math.sin(a) * r * 0.8); }
+        ctx.closePath(); ctx.fillStyle = lump; ctx.fill();
+        ctx.globalAlpha = prog;
+        drawShaped(cfg.food, 250, 235, 0.9 - pulse * 0.08);
+        ctx.globalAlpha = 1;
+        // hands
+        const gap = 160 - pulse * 40;
+        [-1, 1].forEach(sgn => {
+          ctx.save(); ctx.translate(250 + sgn * gap, 235); ctx.scale(sgn, 1);
+          rr(-10, -45, 60, 90, 28); ctx.fillStyle = "#ffd9a8"; ctx.fill(); ctx.strokeStyle = "#17423b"; ctx.lineWidth = 3; ctx.stroke();
+          ctx.restore();
+        });
+        rr(150, 360, 200, 14, 7); ctx.fillStyle = "#e3eee9"; ctx.fill();
+        if (prog > 0) { rr(150, 360, 200 * prog, 14, 7); ctx.fillStyle = "#ffcc4d"; ctx.fill(); }
+        timerBar(t / LIMIT);
+        label(taps + " / " + cfg.need, 250, 335, 20, "#ffffff");
+      },
+    };
+  }
+
   // ================= finished dishes =================
   function plateBase() {
     ctx.beginPath(); ctx.ellipse(250, 220, 190, 110, 0, 0, Math.PI * 2); ctx.fillStyle = "#ffffff"; ctx.fill();
@@ -1072,6 +1311,86 @@
       for (let i = 0; i < 5; i++) { ctx.beginPath(); ctx.arc(170 + i * 40, 142, 10, 0, Math.PI * 2); ctx.fillStyle = "#ffffff"; ctx.fill(); }
       [190, 250, 310].forEach(x => drawItem("strawberry", x, 120));
     },
+    friedEgg() {
+      plateBase();
+      ctx.beginPath();
+      for (let i = 0; i <= 14; i++) { const a = i / 14 * Math.PI * 2, r = 95 + Math.sin(i * 2.1) * 12; ctx.lineTo(250 + Math.cos(a) * r * 1.2, 212 + Math.sin(a) * r * 0.6); }
+      ctx.closePath(); ctx.fillStyle = "#fbfaf3"; ctx.fill(); ctx.strokeStyle = "#e9dcb8"; ctx.lineWidth = 3; ctx.stroke();
+      ctx.beginPath(); ctx.ellipse(262, 205, 40, 26, 0, 0, Math.PI * 2); ctx.fillStyle = "#ffb627"; ctx.fill();
+      ctx.beginPath(); ctx.ellipse(250, 196, 12, 6, -0.4, 0, Math.PI * 2); ctx.fillStyle = "rgba(255,255,255,0.5)"; ctx.fill();
+    },
+    riceball() {
+      plateBase();
+      drawShaped("riceball", 190, 210, 0.75);
+      drawShaped("riceball", 310, 210, 0.75);
+    },
+    sandwich() {
+      plateBase();
+      [[175, 0.3], [325, -0.3]].forEach(([x, r]) => {
+        ctx.save(); ctx.translate(x, 212); ctx.rotate(r);
+        ctx.beginPath(); ctx.moveTo(-80, 50); ctx.lineTo(80, 50); ctx.lineTo(-80, -70); ctx.closePath(); ctx.fillStyle = "#e9c27a"; ctx.fill();
+        ctx.beginPath(); ctx.moveTo(-72, 44); ctx.lineTo(66, 44); ctx.lineTo(-72, -58); ctx.closePath(); ctx.fillStyle = "#fbf1d6"; ctx.fill();
+        ctx.fillStyle = "#7cc46a"; ctx.fillRect(-80, 48, 160, 6);
+        ctx.fillStyle = "#e8384f"; ctx.fillRect(-80, 54, 160, 5);
+        ctx.fillStyle = "#ffcc4d"; ctx.fillRect(-80, 59, 160, 5);
+        ctx.restore();
+      });
+    },
+    sundae() {
+      ctx.beginPath(); ctx.arc(250, 212, 165, 0, Math.PI * 2); ctx.fillStyle = "#cfe7f2"; ctx.fill();
+      drawPlaceBase("sundae");
+      PLACE.sundae.spots.forEach(([x, y, k]) => drawItem(k, x, y));
+    },
+    hotteok() {
+      plateBase();
+      [[175, 200], [325, 200], [250, 245]].forEach(([x, y]) => {
+        ctx.beginPath(); ctx.ellipse(x, y, 70, 38, 0, 0, Math.PI * 2); ctx.fillStyle = "#c98a3a"; ctx.fill();
+        ctx.beginPath(); ctx.ellipse(x - 8, y - 6, 40, 16, 0, 0, Math.PI * 2); ctx.fillStyle = "rgba(255,230,170,0.35)"; ctx.fill();
+        ctx.beginPath(); ctx.ellipse(x + 20, y + 10, 14, 6, 0, 0, Math.PI * 2); ctx.fillStyle = "#7a3f12"; ctx.fill();
+      });
+    },
+    jeon() {
+      plateBase();
+      ctx.save(); ctx.translate(0, -24); drawFood("jeon", "#cf9a3c", 236, 2.6, true); ctx.restore();
+      ctx.strokeStyle = "rgba(120,70,20,0.4)"; ctx.lineWidth = 2;
+      [[-1, 0], [0, -1], [1, 0]].forEach((_, i) => { ctx.beginPath(); ctx.moveTo(180 + i * 70, 160); ctx.lineTo(180 + i * 70, 265); ctx.stroke(); });
+      ctx.beginPath(); ctx.ellipse(390, 280, 28, 14, 0, 0, Math.PI * 2); ctx.fillStyle = "#5a3a22"; ctx.fill();
+    },
+    dumpling() {
+      ctx.beginPath(); ctx.arc(250, 212, 160, 0, Math.PI * 2); ctx.fillStyle = "#c9a27a"; ctx.fill();
+      ctx.beginPath(); ctx.arc(250, 212, 145, 0, Math.PI * 2); ctx.fillStyle = "#e6c9a0"; ctx.fill();
+      ctx.strokeStyle = "rgba(150,110,60,0.5)"; ctx.lineWidth = 2;
+      for (let i = -140; i <= 140; i += 20) { ctx.beginPath(); ctx.moveTo(250 + i, 212 - Math.sqrt(145 * 145 - i * i)); ctx.lineTo(250 + i, 212 + Math.sqrt(145 * 145 - i * i)); ctx.stroke(); }
+      [[190, 160], [310, 160], [160, 240], [250, 230], [340, 240], [250, 300]].forEach(([x, y]) => drawShaped("dumpling", x, y, 0.5));
+    },
+    curry() {
+      plateBase();
+      ctx.beginPath(); ctx.ellipse(205, 210, 95, 62, 0, 0, Math.PI * 2); ctx.fillStyle = "#fbfaf3"; ctx.fill();
+      ctx.beginPath(); ctx.ellipse(300, 215, 100, 66, 0, 0, Math.PI * 2); ctx.fillStyle = "#c98a1f"; ctx.fill();
+      const rnd = seeded(31);
+      for (let i = 0; i < 14; i++) {
+        const x = 230 + rnd() * 140, y = 175 + rnd() * 80;
+        rr(x - 8, y - 8, 16, 16, 3); ctx.fillStyle = i % 2 ? "#f2832f" : "#f6e3a6"; ctx.fill();
+      }
+    },
+    cookie() {
+      plateBase();
+      [[180, 185], [280, 170], [360, 215], [215, 255], [310, 260]].forEach(([x, y]) => {
+        ctx.beginPath(); ctx.arc(x, y, 38, 0, Math.PI * 2); ctx.fillStyle = "#d9a050"; ctx.fill();
+        ctx.fillStyle = "#5a3422"; [[-14, -10], [10, -16], [0, 6], [-12, 16], [16, 12]].forEach(([a, b]) => { ctx.beginPath(); ctx.arc(x + a, y + b, 4.5, 0, Math.PI * 2); ctx.fill(); });
+      });
+    },
+    burger() {
+      plateBase();
+      ctx.beginPath(); ctx.ellipse(250, 255, 120, 30, 0, 0, Math.PI * 2); ctx.fillStyle = "#d99a45"; ctx.fill();
+      ctx.beginPath(); ctx.ellipse(250, 236, 118, 26, 0, 0, Math.PI * 2); ctx.fillStyle = "#6b3b26"; ctx.fill();
+      ctx.beginPath(); for (let i = 0; i <= 20; i++) ctx.lineTo(130 + i * 12, 222 + (i % 2) * 10); ctx.lineTo(370, 214); ctx.lineTo(130, 214); ctx.closePath(); ctx.fillStyle = "#ffcc4d"; ctx.fill();
+      ctx.beginPath(); for (let i = 0; i <= 16; i++) ctx.lineTo(126 + i * 15.5, 208 + Math.sin(i * 1.7) * 6); ctx.lineTo(374, 200); ctx.lineTo(126, 200); ctx.closePath(); ctx.fillStyle = "#6cc06a"; ctx.fill();
+      ctx.fillStyle = "#e8384f"; ctx.fillRect(140, 192, 220, 10);
+      ctx.beginPath(); ctx.moveTo(130, 195); ctx.quadraticCurveTo(250, 70, 370, 195); ctx.closePath(); ctx.fillStyle = "#e7a64f"; ctx.fill();
+      const rnd = seeded(41); ctx.fillStyle = "#fff6dc";
+      for (let i = 0; i < 16; i++) { ctx.beginPath(); ctx.ellipse(175 + rnd() * 150, 135 + rnd() * 45, 4, 2, rnd() * 3, 0, Math.PI * 2); ctx.fill(); }
+    },
     salad() {
       ctx.beginPath(); ctx.arc(250, 212, 160, 0, Math.PI * 2); ctx.fillStyle = "#8cc6dd"; ctx.fill();
       ctx.save(); ctx.translate(0, 2); drawPlaceBase("salad"); ctx.restore();
@@ -1101,7 +1420,29 @@
       steps: () => [makeRub(RUB.peel), makeChop(CHOP.potato), makeHeat(HEAT.oil), makeRub(RUB.salt)] },
     { id: "cake", name: "딸기 케이크", level: "어려움",
       steps: () => [makeEgg(2), makeStir(STIR.batter), makeHeat(HEAT.ovenCake), makePlace(PLACE.cake)] },
+    { id: "friedEgg", name: "계란후라이", level: "쉬움",
+      steps: () => [makeHeat(HEAT.pan), makeEgg(1), makeFlip(FLIP.friedEgg)] },
+    { id: "riceball", name: "주먹밥", level: "쉬움",
+      steps: () => [makeStir(STIR.riceMix), makeSqueeze(SQUEEZE.riceball)] },
+    { id: "sandwich", name: "샌드위치", level: "쉬움",
+      steps: () => [makeChop(CHOP.tomato), makeEgg(1), makePlace(PLACE.sandwich)] },
+    { id: "sundae", name: "아이스크림", level: "쉬움",
+      steps: () => [makeChop(CHOP.banana), makePour(POUR.chocolate), makePlace(PLACE.sundae)] },
+    { id: "hotteok", name: "호떡", level: "보통",
+      steps: () => [makeStir(STIR.dough), makeSqueeze(SQUEEZE.hotteok), makeHeat(HEAT.pan), makeFlip(FLIP.hotteok)] },
+    { id: "jeon", name: "파전", level: "보통",
+      steps: () => [makeChop(CHOP.onion), makeStir(STIR.jeonBatter), makeHeat(HEAT.pan), makeFlip(FLIP.jeon)] },
+    { id: "dumpling", name: "만두", level: "보통",
+      steps: () => [makeChop(CHOP.cabbage), makeStir(STIR.filling), makeSqueeze(SQUEEZE.dumpling), makeHeat(HEAT.pot)] },
+    { id: "curry", name: "카레라이스", level: "보통",
+      steps: () => [makeRub(RUB.peel), makeChop(CHOP.carrot), makeHeat(HEAT.pot), makeStir(STIR.curry)] },
+    { id: "cookie", name: "초코칩 쿠키", level: "보통",
+      steps: () => [makeStir(STIR.dough), makeSqueeze(SQUEEZE.cookie), makePlace(PLACE.cookie), makeHeat(HEAT.ovenCookie)] },
+    { id: "burger", name: "햄버거", level: "어려움",
+      steps: () => [makeSqueeze(SQUEEZE.patty), makeHeat(HEAT.pan), makeFlip(FLIP.patty), makeChop(CHOP.tomato), makePlace(PLACE.burger)] },
   ];
+  const LEVELS = ["쉬움", "보통", "어려움"];
+  RECIPES.sort((a, b) => LEVELS.indexOf(a.level) - LEVELS.indexOf(b.level));
   RECIPES.forEach(r => { r.blurb = r.steps().map(s => s.name).join(" · "); });
 
   // ================= flow =================
@@ -1128,20 +1469,27 @@
     ctx = saved;
   }
 
+  let menuFilter = "전체";
   function menu() {
     recipe = null; steps = []; results = []; cur = -1; scene = null; running = false;
     renderSteps();
     recipeEl.textContent = "메뉴를 골라 주세요";
     say("오늘은 뭘 만들어 볼까요? 먹고 싶은 요리를 골라 주세요.", "happy");
     const best = loadBest();
-    show('<div class="card menu-card"><div class="eyebrow">메뉴판 · ' + RECIPES.length + '가지 요리</div><h2>무엇을 만들까요?</h2><div class="menu">' +
-      RECIPES.map(r =>
+    const cleared = RECIPES.filter(r => best[r.id] != null).length;
+    const list = RECIPES.filter(r => menuFilter === "전체" || r.level === menuFilter);
+    show('<div class="card menu-card"><div class="eyebrow">메뉴판 · ' + RECIPES.length + "가지 요리 · " + cleared + '개 완성</div><h2>무엇을 만들까요?</h2>' +
+      '<div class="chips">' + ["전체", ...LEVELS].map((l, i) =>
+        '<button type="button" class="chip' + (l === menuFilter ? " on" : "") + '" id="lv-' + i + '" aria-pressed="' + (l === menuFilter) + '">' + l + "</button>").join("") + "</div>" +
+      '<div class="menu">' +
+      list.map(r =>
         '<button type="button" class="dish" id="dish-' + r.id + '"><canvas data-id="' + r.id + '" aria-hidden="true"></canvas>' +
         '<span><span class="dish-name">' + r.name + '</span><span class="dish-meta">' + r.level + " · " +
         (best[r.id] != null ? "최고 <b>" + best[r.id] + "</b>" : "도전!") + "</span></span></button>"
       ).join("") + "</div></div>");
     ov.querySelectorAll(".dish canvas").forEach(c => drawThumb(c, c.dataset.id));
-    RECIPES.forEach(r => on("dish-" + r.id, () => startRecipe(r)));
+    list.forEach(r => on("dish-" + r.id, () => startRecipe(r)));
+    ["전체", ...LEVELS].forEach((l, i) => on("lv-" + i, () => { menuFilter = l; menu(); }));
   }
 
   function startRecipe(r) {
