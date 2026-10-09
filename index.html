@@ -170,7 +170,7 @@
       <ellipse cx="43" cy="47" rx="3" ry="2" fill="#ff9c86"/>
       <path id="mouth" d="M27 47q5 5 10 0" fill="none" stroke="#17423b" stroke-width="2" stroke-linecap="round"/>
     </svg>
-    <div class="bubble" id="bubble">안녕하세요! 저는 고모리예요. 오늘은 뭘 만들어 볼까요?</div>
+    <div class="bubble" id="bubble">안녕하세요! 저는 지원이에요. 오늘은 뭘 만들어 볼까요?</div>
   </div>
 </div>
 
@@ -1482,12 +1482,13 @@
     ctx = saved;
   }
 
-  let menuFilter = "전체";
+  let menuFilter = "전체", greeted = false;
   function menu() {
     recipe = null; steps = []; results = []; cur = -1; scene = null; running = false;
     renderSteps();
     recipeEl.textContent = "메뉴를 골라 주세요";
-    say("오늘은 뭘 만들어 볼까요? 먹고 싶은 요리를 골라 주세요.", "happy");
+    say((greeted ? "" : "안녕하세요! 저는 지원이에요. ") + "오늘은 뭘 만들어 볼까요? 먹고 싶은 요리를 골라 주세요.", "happy");
+    greeted = true;
     const best = loadBest();
     const cleared = RECIPES.filter(r => best[r.id] != null).length;
     const list = RECIPES.filter(r => menuFilter === "전체" || r.level === menuFilter);
@@ -1525,10 +1526,10 @@
     results[cur] = score;
     renderSteps();
     const [txt] = judge(score);
-    const line = score >= 90 ? "완벽해요! 고모리도 깜짝 놀랐어요." :
+    const line = score >= 90 ? "완벽해요! 지원이도 깜짝 놀랐어요." :
                  score >= 70 ? "아주 잘했어요! 이 정도면 셰프예요." :
                  score >= 40 ? "괜찮아요, 조금만 더 연습해 봐요." :
-                               "걱정 마세요, 고모리가 살짝 도와줄게요!";
+                               "걱정 마세요, 지원이가 살짝 도와줄게요!";
     say(line, score >= 40 ? "happy" : "oops");
     setTimeout(() => {
       const last = cur === steps.length - 1;
