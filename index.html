@@ -147,7 +147,44 @@
     content: ""; position: absolute; left: -8px; top: 50%; margin-top: -8px;
     border: 8px solid transparent; border-left: 0; border-right-color: var(--paper);
   }
-  @media (prefers-reduced-motion: reduce) { button:active { transform: none; } }
+  /* ambient: breathing lantern, drifting leaf shadows on the paper stage */
+  .brand-row svg { filter: drop-shadow(0 0 6px rgba(242,181,68,0.45)); animation: lantern 3.2s ease-in-out infinite; }
+  @keyframes lantern { 0%, 100% { filter: drop-shadow(0 0 4px rgba(242,181,68,0.35)); } 50% { filter: drop-shadow(0 0 12px rgba(242,181,68,0.8)); } }
+  .stage::after {
+    content: ""; position: absolute; inset: -40px; pointer-events: none; mix-blend-mode: multiply; opacity: 0.55;
+    background:
+      radial-gradient(ellipse 120px 60px at 20% 10%, rgba(60,90,60,0.35), transparent 70%),
+      radial-gradient(ellipse 90px 160px at 80% 30%, rgba(60,90,60,0.28), transparent 70%),
+      radial-gradient(ellipse 140px 70px at 60% 90%, rgba(60,90,60,0.3), transparent 70%);
+    animation: leafshade 9s ease-in-out infinite alternate;
+  }
+  @keyframes leafshade { from { transform: translate(-14px, 6px) rotate(-1.5deg); } to { transform: translate(14px, -8px) rotate(1.5deg); } }
+  .host svg { transform-origin: 50% 90%; }
+  .host svg.jump { animation: jump 0.5s ease-out; }
+  .host svg.jump2 { animation: jump 0.45s ease-out 2; }
+  .host svg.shake { animation: shake 0.4s ease-in-out; }
+  @keyframes jump { 0% { transform: translateY(0); } 35% { transform: translateY(-14px) scale(1.04); } 70% { transform: translateY(0) scale(0.97); } 100% { transform: translateY(0); } }
+  @keyframes shake { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(-6deg); } 75% { transform: rotate(6deg); } }
+  #hat { transition: transform 0.35s ease; transform-origin: 32px 26px; }
+  #sweat, #zz, #stars { transition: opacity 0.2s; }
+  .leafbar { display: inline-flex; align-items: center; gap: 4px; padding: 7px 12px; border-radius: 12px; background: var(--moss-2); color: var(--cream-text); font-size: 0.9rem; font-weight: 700; }
+  .leafbar svg { width: 16px; height: 16px; }
+  .guests { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+  .guest { display: flex; align-items: center; gap: 8px; padding: 6px 10px 6px 6px; border-radius: 14px; background: var(--paper-2); border: 1.5px solid var(--paper-line); font-size: 0.8rem; color: var(--ink-soft); }
+  .guest svg { width: 44px; height: 44px; flex: none; }
+  .guest b { display: block; font-family: var(--font-display); font-size: 0.95rem; color: var(--ink); }
+  .guest.locked { opacity: 0.55; }
+  .shelf { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; font-size: 0.72rem; color: var(--ink-soft); }
+  .shelf span { display: flex; flex-direction: column; align-items: center; gap: 2px; width: 62px; }
+  .shelf svg { width: 34px; height: 34px; }
+  .shelf .locked svg { opacity: 0.25; filter: grayscale(1); }
+  .dish.special { border-style: solid; border-color: var(--lantern); background: #fff6dc; }
+  .dish .tag { font-size: 0.7rem; color: var(--moss); background: var(--lantern); border-radius: 999px; padding: 1px 8px; font-weight: 700; }
+  .dish.locked { opacity: 0.5; }
+  .note { background: #fffdf5; border: 1px solid var(--paper-line); border-radius: 10px; padding: 10px 12px; text-align: left; font-size: 0.9rem; line-height: 1.5; color: var(--ink); box-shadow: 2px 2px 0 var(--paper-line); }
+  .note small { display: block; color: var(--leaf); font-weight: 700; margin-bottom: 2px; }
+  .tip { font-size: 0.88rem; color: var(--leaf); font-weight: 700; }
+  @media (prefers-reduced-motion: reduce) { button:active { transform: none; } .brand-row svg, .stage::after, .host svg { animation: none !important; } }
 </style>
 
 <div class="app">
@@ -161,6 +198,7 @@
     </div>
     <div class="top-right">
       <ol class="steps" id="steps"></ol>
+      <span class="leafbar" id="leaves" title="나뭇잎 (손님 팁)"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 1q9 4 0 18-9-14 0-18z" fill="#7fa86a"/><path d="M10 4v12" stroke="#4f7d45" stroke-width="1.2"/></svg><span> 0</span></span>
       <button id="btn-music" class="music-btn" type="button">♪ 숲길</button>
     </div>
   </header>
@@ -173,15 +211,29 @@
   </div>
 
   <div class="host">
-    <svg viewBox="0 0 64 64" aria-hidden="true">
-      <path d="M14 22c-6-1-8-9-2-12 2-6 10-7 13-3 3-5 12-5 15 0 4-3 11-1 11 5 6 2 5 11-1 11z" fill="#fff" stroke="#17423b" stroke-width="2"/>
-      <rect x="16" y="20" width="32" height="6" rx="2" fill="#fff" stroke="#17423b" stroke-width="2"/>
-      <circle cx="32" cy="42" r="17" fill="#ffd9a8" stroke="#17423b" stroke-width="2"/>
-      <circle cx="25" cy="40" r="2.2" fill="#17423b"/>
-      <circle cx="39" cy="40" r="2.2" fill="#17423b"/>
+    <svg id="jiwon" viewBox="0 0 64 64" aria-hidden="true">
+      <g id="stars" opacity="0">
+        <path d="M6 30l1.5 3 3 .5-2.2 2.1.5 3.2L6 37.3 3.2 38.8l.5-3.2L1.5 33.5l3-.5z" fill="#f2b544"/>
+        <path d="M57 28l1.5 3 3 .5-2.2 2.1.5 3.2L57 35.3l-2.8 1.5.5-3.2-2.2-2.1 3-.5z" fill="#f2b544"/>
+        <path d="M52 50c0-2 3-3 3-1 0-2 3-1 3 1 0 2-3 4-3 4s-3-2-3-4z" fill="#e8738a"/>
+      </g>
+      <g id="hat">
+        <path d="M14 22c-6-1-8-9-2-12 2-6 10-7 13-3 3-5 12-5 15 0 4-3 11-1 11 5 6 2 5 11-1 11z" fill="#fff" stroke="#2a3326" stroke-width="2"/>
+        <rect x="16" y="20" width="32" height="6" rx="2" fill="#fff" stroke="#2a3326" stroke-width="2"/>
+        <path d="M30 15q2-3 4 0" fill="none" stroke="#7fa86a" stroke-width="1.5" stroke-linecap="round"/>
+      </g>
+      <path d="M17 36q-2-10 6-13 6-3 18 0 8 3 6 13" fill="#8a5a35"/>
+      <circle cx="32" cy="42" r="17" fill="#ffd9a8" stroke="#2a3326" stroke-width="2"/>
+      <path d="M16 38q3-9 16-9t16 9q-2-5-16-5t-16 5z" fill="#8a5a35"/>
+      <path id="browL" d="M21 35q4-2 7 0" fill="none" stroke="#2a3326" stroke-width="1.6" stroke-linecap="round"/>
+      <path id="browR" d="M36 35q3-2 7 0" fill="none" stroke="#2a3326" stroke-width="1.6" stroke-linecap="round"/>
+      <path id="eyeL" d="M22.8 40a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0" fill="#2a3326"/>
+      <path id="eyeR" d="M36.8 40a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0" fill="#2a3326"/>
       <ellipse cx="21" cy="47" rx="3" ry="2" fill="#ff9c86"/>
       <ellipse cx="43" cy="47" rx="3" ry="2" fill="#ff9c86"/>
-      <path id="mouth" d="M27 47q5 5 10 0" fill="none" stroke="#17423b" stroke-width="2" stroke-linecap="round"/>
+      <path id="mouth" d="M27 47q5 5 10 0" fill="none" stroke="#2a3326" stroke-width="2" stroke-linecap="round"/>
+      <path id="sweat" d="M50 36q3 4 0 6q-3-2 0-6z" fill="#8cc6dd" opacity="0"/>
+      <text id="zz" x="48" y="22" font-size="9" font-weight="bold" fill="#6b6a55" opacity="0">zZ</text>
     </svg>
     <div class="bubble" id="bubble">안녕하세요! 저는 지원이에요. 오늘은 뭘 만들어 볼까요?</div>
   </div>
@@ -199,10 +251,76 @@
   const stepsEl = document.getElementById("steps");
   const recipeEl = document.getElementById("recipe");
 
-  const MOUTHS = { happy: "M26 46q6 7 12 0", smile: "M27 47q5 5 10 0", oops: "M27 50q5 -4 10 0" };
-  function say(text, mood = "smile") {
+  // Jiwon's expression set: eyes, brows, mouth, hat tilt and extras per mood
+  const jiwon = document.getElementById("jiwon");
+  const part = id => document.getElementById(id);
+  const EYE = {
+    open: ["M22.8 40a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0", "M36.8 40a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0"],
+    closed: ["M22 40q3 2 6 0", "M36 40q3 2 6 0"],
+    happy: ["M22 41q3-4 6 0", "M36 41q3-4 6 0"],
+    wide: ["M22.2 40a2.8 2.8 0 1 0 5.6 0a2.8 2.8 0 1 0 -5.6 0", "M36.2 40a2.8 2.8 0 1 0 5.6 0a2.8 2.8 0 1 0 -5.6 0"],
+    star: ["M25 36.5l1.1 2.3 2.5.3-1.8 1.7.5 2.5-2.3-1.2-2.3 1.2.5-2.5-1.8-1.7 2.5-.3z", "M39 36.5l1.1 2.3 2.5.3-1.8 1.7.5 2.5-2.3-1.2-2.3 1.2.5-2.5-1.8-1.7 2.5-.3z"],
+    wink: ["M22 41q3-4 6 0", "M36.8 40a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0"],
+    squint: ["M22 40q3 1 6 0", "M36 40q3 1 6 0"],
+    half: ["M22.8 41a2.2 1.2 0 1 0 4.4 0a2.2 1.2 0 1 0 -4.4 0", "M36.8 41a2.2 1.2 0 1 0 4.4 0a2.2 1.2 0 1 0 -4.4 0"],
+  };
+  const BROW = {
+    calm: ["M21 35q4-2 7 0", "M36 35q3-2 7 0"],
+    up: ["M21 33q4-3 7-1", "M36 32q3-2 7 1"],
+    sad: ["M21 36q3-3 7-3", "M36 33q4 0 7 3"],
+    focus: ["M21 36q4-1 7 1", "M36 37q3-2 7-1"],
+  };
+  const MOUTH = {
+    smile: "M27 47q5 5 10 0", big: "M26 46q6 8 12 0", o: "M30 47a2.5 2.5 0 1 0 5 0a2.5 2.5 0 1 0 -5 0",
+    flat: "M28 48h8", sad: "M27 50q5-4 10 0", wave: "M27 48q2.5-2 5 0t5 0", tiny: "M30 48q2 1 4 0",
+  };
+  const MOODS = {
+    idle:    { eye: "open",   brow: "calm",  mouth: "smile", hat: 0 },
+    sleepy:  { eye: "half",   brow: "calm",  mouth: "tiny",  hat: -10, zz: true },
+    explain: { eye: "open",   brow: "up",    mouth: "o",     hat: 0 },
+    focus:   { eye: "squint", brow: "focus", mouth: "flat",  hat: 0 },
+    happy:   { eye: "happy",  brow: "up",    mouth: "big",   hat: 4, anim: "jump" },
+    perfect: { eye: "star",   brow: "up",    mouth: "big",   hat: 6, anim: "jump", stars: true },
+    combo:   { eye: "wink",   brow: "up",    mouth: "smile", hat: 3 },
+    sad:     { eye: "open",   brow: "sad",   mouth: "sad",   hat: -4 },
+    fail:    { eye: "wide",   brow: "sad",   mouth: "o",     hat: -14, sweat: true, anim: "shake" },
+    cough:   { eye: "closed", brow: "focus", mouth: "wave",  hat: -3, sweat: true },
+    present: { eye: "happy",  brow: "calm",  mouth: "smile", hat: 2 },
+    touched: { eye: "closed", brow: "up",    mouth: "big",   hat: 5, anim: "jump2", sweat: true },
+  };
+  const MOOD_ALIAS = { smile: "idle", oops: "sad" };
+  let curMood = "idle", blinkTimer = null, sleepTimer = null;
+  function setMood(mood) {
+    const m = MOODS[MOOD_ALIAS[mood] || mood] || MOODS.idle;
+    curMood = MOOD_ALIAS[mood] || mood;
+    part("eyeL").setAttribute("d", EYE[m.eye][0]); part("eyeR").setAttribute("d", EYE[m.eye][1]);
+    part("browL").setAttribute("d", BROW[m.brow][0]); part("browR").setAttribute("d", BROW[m.brow][1]);
+    part("mouth").setAttribute("d", MOUTH[m.mouth]);
+    part("hat").style.transform = "rotate(" + (m.hat / 2) + "deg) translateY(" + (m.hat < 0 ? -m.hat * 0.35 : -m.hat * 0.5) + "px)";
+    part("sweat").setAttribute("opacity", m.sweat ? 1 : 0);
+    part("zz").setAttribute("opacity", m.zz ? 1 : 0);
+    part("stars").setAttribute("opacity", m.stars ? 1 : 0);
+    jiwon.classList.remove("jump", "jump2", "shake");
+    if (m.anim) { void jiwon.offsetWidth; jiwon.classList.add(m.anim); }
+  }
+  // blink every few seconds while the eyes are open; doze off after a long wait on the menu
+  function blink() {
+    const m = MOODS[curMood];
+    if (m && m.eye === "open") {
+      part("eyeL").setAttribute("d", EYE.closed[0]); part("eyeR").setAttribute("d", EYE.closed[1]);
+      setTimeout(() => { if (MOODS[curMood] && MOODS[curMood].eye === "open") { part("eyeL").setAttribute("d", EYE.open[0]); part("eyeR").setAttribute("d", EYE.open[1]); } }, 140);
+    }
+    blinkTimer = setTimeout(blink, 2200 + Math.random() * 2500);
+  }
+  blink();
+  function armSleep() {
+    clearTimeout(sleepTimer);
+    sleepTimer = setTimeout(() => { if (!recipe) { setMood("sleepy"); bubble.textContent = "zZ… 아, 깜빡 졸았어요. 뭐 만들까요?"; } }, 30000);
+  }
+  document.addEventListener("pointerdown", () => { if (curMood === "sleepy") { setMood("fail"); bubble.textContent = "앗! 깼어요! 주문하세요!"; setTimeout(() => setMood("idle"), 900); } armSleep(); }, true);
+  function say(text, mood = "idle") {
     bubble.textContent = text;
-    mouth.setAttribute("d", MOUTHS[mood] || MOUTHS.smile);
+    setMood(mood);
   }
 
   // ---------- sound (starts only after a tap) ----------
@@ -226,6 +344,8 @@
   }
 
   // ---------- best scores (this browser only) ----------
+  function loadProgress() { try { return Object.assign({ leaves: 0, diary: {}, orders: {} }, JSON.parse(localStorage.getItem("gomori-progress") || "{}")); } catch (e) { return { leaves: 0, diary: {}, orders: {} }; } }
+  function saveProgress(pr) { try { localStorage.setItem("gomori-progress", JSON.stringify(pr)); } catch (e) {} }
   function loadBest() { try { return JSON.parse(localStorage.getItem("gomori-best") || "{}"); } catch (e) { return {}; } }
   function saveBest(id, score) {
     const b = loadBest();
@@ -278,18 +398,95 @@
   function seeded(seed) { return () => ((seed = (seed * 9301 + 49297) % 233280) / 233280); }
 
   const floats = [];
-  function pop(text, x, y, color = "#ff6b4a") { floats.push({ text, x, y, life: 1, color }); }
+  // combo & fever: good judgements stack leaves; five in a row and the wind picks up (fever)
+  let combo = 0, fever = false, flash = 0, feverLeaves = [], feverTips = 0;
+  const FEVER_AT = 5;
+  function onJudged(text) {
+    const good = /^(완벽|훌륭)/.test(text), bad = /^(아쉬|실패|빗나감)/.test(text);
+    if (good) {
+      combo++;
+      if (/^완벽/.test(text)) { flash = 1; setMood("perfect"); }
+      else setMood(combo >= 3 ? "combo" : "happy");
+      if (combo >= FEVER_AT && !fever) { fever = true; music.setFever(true); say("바람이 지나가요! 피버 타임!", "combo"); }
+      if (fever) { feverTips += 2; for (let i = 0; i < 6; i++) feverLeaves.push({ x: -20 - Math.random() * 60, y: 40 + Math.random() * 300, vx: 180 + Math.random() * 120, vy: (Math.random() - 0.5) * 40, r: Math.random() * 6.3, s: 0.6 + Math.random() * 0.7 }); }
+    } else if (bad) {
+      if (combo >= 2 || fever) setMood("sad");
+      combo = 0;
+      if (fever) { fever = false; music.setFever(false); }
+    }
+  }
+  function resetCombo() { combo = 0; if (fever) { fever = false; music.setFever(false); } feverLeaves = []; }
+  function pop(text, x, y, color = "#ff6b4a") {
+    const stamp = /^(완벽|훌륭)/.test(text);
+    // stack rapid stamps upward so they don't pile on each other
+    const live = floats.filter(f => f.stamp && f.life > 0.5 && Math.abs(f.x - x) < 120).length;
+    floats.push({ text, x, y: y - live * 34, life: 1, color, stamp, rot: (Math.random() - 0.5) * 0.3 });
+    onJudged(text);
+  }
+  function drawLeaf(x, y, r, size, color) {
+    ctx.save(); ctx.translate(x, y); ctx.rotate(r); ctx.scale(size, size);
+    ctx.beginPath(); ctx.moveTo(0, -10); ctx.quadraticCurveTo(9, -4, 0, 10); ctx.quadraticCurveTo(-9, -4, 0, -10); ctx.fillStyle = color; ctx.fill();
+    ctx.beginPath(); ctx.moveTo(0, -8); ctx.lineTo(0, 8); ctx.strokeStyle = "rgba(0,0,0,0.18)"; ctx.lineWidth = 1; ctx.stroke();
+    ctx.restore();
+  }
   function drawFloats(dt) {
+    // fever: a gust of leaves sweeps across the stage
+    for (let i = feverLeaves.length - 1; i >= 0; i--) {
+      const l = feverLeaves[i];
+      l.x += l.vx * dt; l.y += l.vy * dt + Math.sin(l.x / 30) * 1.2; l.r += dt * 3;
+      if (l.x > W + 30) { feverLeaves.splice(i, 1); continue; }
+      drawLeaf(l.x, l.y, l.r, l.s, i % 3 ? "#7fa86a" : "#f2b544");
+    }
     for (let i = floats.length - 1; i >= 0; i--) {
       const f = floats[i];
-      f.life -= dt * 1.2; f.y -= dt * 40;
+      f.life -= dt * 1.1; f.y -= dt * (f.stamp ? 18 : 40);
       if (f.life <= 0) { floats.splice(i, 1); continue; }
+      const age = 1 - f.life, impact = f.stamp ? 1 + Math.max(0, 0.15 - age) * 3 : 1;
+      ctx.save();
       ctx.globalAlpha = clamp(f.life * 1.5, 0, 1);
-      ctx.font = 'bold 30px "Gowun Batang", serif';
+      ctx.translate(f.x, f.y); ctx.rotate(f.stamp ? f.rot : 0); ctx.scale(impact, impact);
+      ctx.font = 'bold ' + (f.stamp ? 26 : 30) + 'px "Gowun Batang", serif';
       ctx.textAlign = "center"; ctx.textBaseline = "middle";
-      ctx.lineWidth = 6; ctx.strokeStyle = "#fff"; ctx.strokeText(f.text, f.x, f.y);
-      ctx.fillStyle = f.color; ctx.fillText(f.text, f.x, f.y);
-      ctx.globalAlpha = 1;
+      if (f.stamp) {
+        const w = ctx.measureText(f.text).width + 28;
+        rr(-w / 2, -22, w, 44, 10); ctx.fillStyle = "rgba(255,253,245,0.92)"; ctx.fill();
+        ctx.setLineDash([]); ctx.lineWidth = 3; ctx.strokeStyle = f.color; ctx.stroke();
+        rr(-w / 2 + 5, -17, w - 10, 34, 7); ctx.lineWidth = 1.2; ctx.stroke();
+        ctx.fillStyle = f.color; ctx.fillText(f.text, 0, 1);
+      } else {
+        ctx.lineWidth = 6; ctx.strokeStyle = "#fff"; ctx.strokeText(f.text, 0, 0);
+        ctx.fillStyle = f.color; ctx.fillText(f.text, 0, 0);
+      }
+      ctx.restore();
+    }
+    // combo leaves in the corner
+    if (combo >= 2 && running) {
+      for (let i = 0; i < Math.min(combo, 9); i++) drawLeaf(W - 22 - i * 9, 36 + (i % 2) * 4, -0.6 + i * 0.1, 0.8, fever ? "#f2b544" : "#7fa86a");
+      label("콤보 " + combo + (fever ? " · 피버!" : ""), W - 30 - Math.min(combo, 9) * 9 - 52, 36, 15, fever ? "#c98f1f" : "#4f7d45");
+    }
+    // perfect: a pulse of lantern light at the edges
+    if (flash > 0) {
+      flash = Math.max(0, flash - dt * 2.5);
+      const g = ctx.createRadialGradient(W / 2, H / 2, H * 0.35, W / 2, H / 2, H * 0.8);
+      g.addColorStop(0, "rgba(242,181,68,0)"); g.addColorStop(1, "rgba(242,181,68," + (0.55 * flash) + ")");
+      ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    }
+  }
+  // timing meter drawn as a tree branch: a leaf slides along it, a flower marks the sweet spot
+  function branchMeter(x0, x1, y, pos, showLeaf) {
+    const cx = lerp(x0, x1, 0.5);
+    ctx.strokeStyle = "#8a5a35"; ctx.lineWidth = 7; ctx.lineCap = "round";
+    ctx.beginPath(); ctx.moveTo(x0, y + 6); ctx.quadraticCurveTo(cx, y - 4, x1, y + 6); ctx.stroke();
+    ctx.lineWidth = 3; ctx.strokeStyle = "#a0714a";
+    [[0.18, -1], [0.3, 1], [0.72, -1], [0.85, 1]].forEach(([f, d]) => { const bx = lerp(x0, x1, f); ctx.beginPath(); ctx.moveTo(bx, y + 2); ctx.lineTo(bx + 8 * d, y - 12 * (d > 0 ? 1 : 0.6) + (d < 0 ? 0 : 0)); ctx.stroke(); });
+    const zw = (x1 - x0) * 0.2;
+    rr(cx - zw / 2, y - 12, zw, 24, 10); ctx.fillStyle = "rgba(166,220,178,0.5)"; ctx.fill();
+    const on = showLeaf && Math.abs(pos - 0.5) < 0.03;
+    for (let i = 0; i < 5; i++) { const a = i / 5 * Math.PI * 2; ctx.beginPath(); ctx.ellipse(cx + Math.cos(a) * (on ? 9 : 6), y + Math.sin(a) * (on ? 9 : 6), 5, 3.2, a, 0, Math.PI * 2); ctx.fillStyle = on ? "#ff9fb0" : "#f6c1cc"; ctx.fill(); }
+    ctx.beginPath(); ctx.arc(cx, y, on ? 4.5 : 3.5, 0, Math.PI * 2); ctx.fillStyle = "#f2b544"; ctx.fill();
+    if (showLeaf) {
+      const nx = lerp(x0, x1, pos);
+      drawLeaf(nx, y - 14 + Math.abs(Math.sin(pos * 6)) * 0, Math.PI / 2 + (pos - 0.5) * 0.8, 1.35, "#4f7d45");
     }
   }
   function judge(score) {
@@ -472,16 +669,7 @@
           const yy = lerp(110, 305, a * a);
           ctx.beginPath(); ctx.arc(lerp(250, slotX(idx), a), yy, 12, 0, Math.PI * 2); ctx.fillStyle = "#ffb627"; ctx.fill();
         }
-        const x0 = 70, x1 = 430, y = 182;
-        rr(x0, y, x1 - x0, 24, 12); ctx.fillStyle = "#e3eee9"; ctx.fill();
-        rr(lerp(x0, x1, 0.4), y, (x1 - x0) * 0.2, 24, 6); ctx.fillStyle = "#a6dcb2"; ctx.fill();
-        rr(lerp(x0, x1, 0.47), y, (x1 - x0) * 0.06, 24, 4); ctx.fillStyle = "#4caf6a"; ctx.fill();
-        if (phase === "aim") {
-          const nx = lerp(x0, x1, pos);
-          ctx.beginPath(); ctx.moveTo(nx, y - 10); ctx.lineTo(nx - 9, y - 22); ctx.lineTo(nx + 9, y - 22); ctx.closePath();
-          ctx.fillStyle = "#ff6b4a"; ctx.fill();
-          ctx.fillRect(nx - 2, y - 10, 4, 44);
-        }
+        branchMeter(70, 430, 194, pos, phase === "aim");
         label("계란 " + Math.min(idx + 1, count) + " / " + count, 250, 236, 18);
       },
     };
@@ -581,6 +769,7 @@
             if (burn > 0) { ctx.globalAlpha = burn * 0.85; ctx.fillStyle = "#5a3a22"; ctx.fill(); ctx.globalAlpha = 1; }
           }
         }
+        if (cfg.vessel !== "oven") drawGuest("sol", 36, 330, 0.9, temp > HI);
         if (ok) {
           ctx.strokeStyle = "rgba(160,175,172,0.7)"; ctx.lineWidth = 3;
           for (let i = 0; i < 3; i++) {
@@ -1230,16 +1419,7 @@
         } else {
           drawFood(cfg.food, topColor, 236, 1, side > 0);
         }
-        const x0 = 70, x1 = 430, y = 70;
-        rr(x0, y, x1 - x0, 24, 12); ctx.fillStyle = "#e3eee9"; ctx.fill();
-        rr(lerp(x0, x1, 0.4), y, (x1 - x0) * 0.2, 24, 6); ctx.fillStyle = "#a6dcb2"; ctx.fill();
-        rr(lerp(x0, x1, 0.47), y, (x1 - x0) * 0.06, 24, 4); ctx.fillStyle = "#4caf6a"; ctx.fill();
-        if (phase === "aim") {
-          const nx = lerp(x0, x1, pos);
-          ctx.beginPath(); ctx.moveTo(nx, y - 10); ctx.lineTo(nx - 9, y - 22); ctx.lineTo(nx + 9, y - 22); ctx.closePath();
-          ctx.fillStyle = "#ff6b4a"; ctx.fill();
-          ctx.fillRect(nx - 2, y - 10, 4, 44);
-        }
+        branchMeter(70, 430, 82, pos, phase === "aim");
         label("뒤집기 " + Math.min(idx + 1, cfg.count) + " / " + cfg.count, 250, 380, 20);
       },
     };
@@ -1329,9 +1509,27 @@
 
   // ================= finished dishes =================
   function plateBase() {
-    ctx.beginPath(); ctx.ellipse(250, 220, 190, 110, 0, 0, Math.PI * 2); ctx.fillStyle = "#ffffff"; ctx.fill();
-    ctx.strokeStyle = "#c6e2d7"; ctx.lineWidth = 4; ctx.stroke();
-    ctx.beginPath(); ctx.ellipse(250, 220, 150, 82, 0, 0, Math.PI * 2); ctx.strokeStyle = "#e3eee9"; ctx.lineWidth = 2; ctx.stroke();
+    ctx.beginPath(); ctx.ellipse(252, 226, 190, 110, 0, 0, Math.PI * 2); ctx.fillStyle = "rgba(90,58,34,0.12)"; ctx.fill();
+    ctx.beginPath(); ctx.ellipse(250, 220, 190, 110, 0, 0, Math.PI * 2); ctx.fillStyle = "#fffdf6"; ctx.fill();
+    ctx.strokeStyle = "#5a3a22"; ctx.lineWidth = 2.2; ctx.stroke();
+    ctx.beginPath(); ctx.ellipse(250, 220, 150, 82, 0, 0, Math.PI * 2); ctx.strokeStyle = "#e9dcc3"; ctx.lineWidth = 2; ctx.stroke();
+    ctx.beginPath(); ctx.ellipse(130, 150, 26, 8, -0.5, 0, Math.PI * 2); ctx.fillStyle = "rgba(255,255,255,0.9)"; ctx.fill();
+  }
+  // hand-drawn finish for every dish: a loose ink outline, a glossy highlight and steam on hot food
+  const HOT = new Set(["rice", "tteok", "ramen", "omurice", "pizza", "fries", "pancake", "hotteok", "jeon", "dumpling", "curry", "friedEgg", "burger"]);
+  function inkFinish(id) {
+    const now = performance.now() / 1000;
+    if (HOT.has(id)) {
+      ctx.strokeStyle = "rgba(90,58,34,0.35)"; ctx.lineWidth = 3; ctx.lineCap = "round";
+      for (let i = 0; i < 3; i++) {
+        const sx = 205 + i * 45, o = (now * 22 + i * 14) % 36, base = 150;
+        ctx.globalAlpha = 1 - o / 36;
+        ctx.beginPath(); ctx.moveTo(sx, base - o); ctx.bezierCurveTo(sx - 9, base - 14 - o, sx + 9, base - 24 - o, sx, base - 38 - o); ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
+    }
+    ctx.beginPath(); ctx.ellipse(200, 180, 14, 6, -0.5, 0, Math.PI * 2); ctx.fillStyle = "rgba(255,255,255,0.55)"; ctx.fill();
+    ctx.beginPath(); ctx.arc(224, 172, 3, 0, Math.PI * 2); ctx.fill();
   }
   const DISHES = {
     rice() {
@@ -1518,6 +1716,75 @@
     },
   };
 
+  // ================= guests: forest animals who order food =================
+  function drawGuest(kind, x, y, s = 1, alert = false) {
+    ctx.save(); ctx.translate(x, y); ctx.scale(s, s);
+    ctx.lineWidth = 2; ctx.strokeStyle = "#5a3a22";
+    if (kind === "sol") {
+      const q = alert ? 1.6 : 1;
+      ctx.fillStyle = "#6b4a2e";
+      for (let i = 0; i < 9; i++) { const a = -2.6 + i * 0.3; ctx.beginPath(); ctx.moveTo(Math.cos(a) * 16, Math.sin(a) * 14); ctx.lineTo(Math.cos(a) * 26 * q, Math.sin(a) * 24 * q); ctx.lineTo(Math.cos(a + 0.2) * 16, Math.sin(a + 0.2) * 14); ctx.closePath(); ctx.fill(); }
+      ctx.beginPath(); ctx.ellipse(0, 2, 20, 15, 0, 0, Math.PI * 2); ctx.fillStyle = "#d9b48c"; ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.arc(18, 2, 3, 0, Math.PI * 2); ctx.fillStyle = "#2a3326"; ctx.fill();
+      ctx.beginPath(); ctx.arc(8, -2, 1.8, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#8a5a35"; ctx.fillRect(-30, 8, 14, 6); ctx.fillRect(-28, 2, 10, 6);
+    }
+    ctx.restore();
+  }
+  const GUESTS = [
+    { id: "tori", name: "토리", kind: "다람쥐", need: 0, likes: ["riceball", "salad", "sandwich", "sundae", "friedEgg", "rice", "ramen"],
+      lines: ["볼이 터질 것 같아요! 더 주세요!", "빨리빨리! 배고파요!", "이거 도토리보다 맛있어요!"],
+      svg: '<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M30 10c10-8 16 4 10 14-4 6-10 4-12 0" fill="#b5713a" stroke="#5a3a22" stroke-width="1.5"/><ellipse cx="22" cy="30" rx="15" ry="13" fill="#d9924e" stroke="#5a3a22" stroke-width="1.5"/><circle cx="20" cy="22" r="10" fill="#e8a862" stroke="#5a3a22" stroke-width="1.5"/><path d="M12 14l3 7M28 14l-3 7" stroke="#5a3a22" stroke-width="1.5" stroke-linecap="round"/><circle cx="16" cy="22" r="1.6" fill="#2a3326"/><circle cx="24" cy="22" r="1.6" fill="#2a3326"/><ellipse cx="12" cy="27" rx="4" ry="3" fill="#f6a98f"/><ellipse cx="28" cy="27" rx="4" ry="3" fill="#f6a98f"/><path d="M19 26q1 1.5 2 0" fill="none" stroke="#2a3326" stroke-width="1.2"/></svg>' },
+    { id: "dallae", name: "달래", kind: "토끼 · 미식가", need: 5, likes: ["tteok", "pancake", "gimbap", "omurice", "pizza", "hotteok", "jeon", "dumpling", "curry", "cookie"],
+      lines: ["흠… 오차가 꽤 작군요. 인정합니다.", "소스 농도가 좋네요. 다음엔 더 빨리.", "이 정도면 숲 최고의 셰프 후보예요."],
+      svg: '<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M16 4q-4 14 2 18M32 4q4 14-2 18" fill="#f3efe6" stroke="#5a3a22" stroke-width="1.5"/><ellipse cx="24" cy="32" rx="14" ry="12" fill="#f3efe6" stroke="#5a3a22" stroke-width="1.5"/><circle cx="24" cy="22" r="10" fill="#f7f4ec" stroke="#5a3a22" stroke-width="1.5"/><circle cx="19.5" cy="22" r="4" fill="none" stroke="#5a3a22" stroke-width="1.3"/><circle cx="28.5" cy="22" r="4" fill="none" stroke="#5a3a22" stroke-width="1.3"/><circle cx="19.5" cy="22" r="1.5" fill="#2a3326"/><circle cx="28.5" cy="22" r="1.5" fill="#2a3326"/><path d="M22 27q2 2 4 0" fill="none" stroke="#2a3326" stroke-width="1.2"/><ellipse cx="15" cy="26" rx="3" ry="2" fill="#f6a98f"/><ellipse cx="33" cy="26" rx="3" ry="2" fill="#f6a98f"/></svg>' },
+    { id: "bamtol", name: "밤톨", kind: "곰 아저씨", need: 10, likes: ["tteok", "fries", "cake", "burger", "ramen", "curry", "dumpling", "pizza"],
+      lines: ["……(엄지)", "한 그릇 더.", "……맛있군."],
+      svg: '<svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="12" cy="12" r="6" fill="#8a5a35" stroke="#5a3a22" stroke-width="1.5"/><circle cx="36" cy="12" r="6" fill="#8a5a35" stroke="#5a3a22" stroke-width="1.5"/><ellipse cx="24" cy="34" rx="17" ry="13" fill="#8a5a35" stroke="#5a3a22" stroke-width="1.5"/><circle cx="24" cy="21" r="13" fill="#9c6a42" stroke="#5a3a22" stroke-width="1.5"/><ellipse cx="24" cy="26" rx="6" ry="4.5" fill="#d9b48c"/><circle cx="24" cy="25" r="1.8" fill="#2a3326"/><circle cx="18" cy="19" r="1.6" fill="#2a3326"/><circle cx="30" cy="19" r="1.6" fill="#2a3326"/></svg>' },
+    { id: "bami", name: "밤이", kind: "부엉이 · 밤 손님", need: 0, night: true, likes: ["cookie", "sundae", "pancake", "cake", "ramen"],
+      lines: ["후우… 밤에는 역시 야식이죠.", "달빛 아래 쿠키 한 조각, 완벽해요."],
+      svg: '<svg viewBox="0 0 48 48" aria-hidden="true"><ellipse cx="24" cy="30" rx="15" ry="15" fill="#6d5a4a" stroke="#5a3a22" stroke-width="1.5"/><path d="M11 18l5-8 6 6h4l6-6 5 8" fill="#6d5a4a" stroke="#5a3a22" stroke-width="1.5"/><ellipse cx="24" cy="34" rx="8" ry="9" fill="#d9c7a8"/><circle cx="18" cy="22" r="5.5" fill="#f7f4ec" stroke="#5a3a22" stroke-width="1.3"/><circle cx="30" cy="22" r="5.5" fill="#f7f4ec" stroke="#5a3a22" stroke-width="1.3"/><circle cx="18" cy="22" r="2.5" fill="#2a3326"/><circle cx="30" cy="22" r="2.5" fill="#2a3326"/><path d="M22 27l2 4 2-4z" fill="#f2b544" stroke="#5a3a22" stroke-width="1"/></svg>' },
+  ];
+  const isNight = () => { const h = new Date().getHours(); return h >= 19 || h < 6; };
+  const dayKey = () => new Date().toISOString().slice(0, 10);
+  function hashStr(str) { let h = 7; for (const c of str) h = (h * 31 + c.charCodeAt(0)) % 100003; return h; }
+  function activeGuests(cleared) {
+    return GUESTS.filter(g => (g.night ? isNight() : true) && cleared >= g.need);
+  }
+  function guestOrder(g) {
+    const pool = g.likes.filter(id => RECIPES.some(r => r.id === id && !r.hidden));
+    return pool[hashStr(dayKey() + g.id) % pool.length];
+  }
+  const DIARY = {
+    rice: "오늘 첫 볶음밥. 계란이 밥알 사이로 노랗게 스며들었다. 토리가 접시째 들고 갔다.",
+    ramen: "비 오는 날엔 라면. 창밖 나뭇잎이 냄비 김과 같이 흔들렸다.",
+    salad: "요거트에 바나나를 썰어 넣었다. 달래가 '균형이 좋다'고 했다. 칭찬… 맞겠지?",
+    friedEgg: "계란후라이를 한 번에 뒤집었다. 노른자가 반짝, 아침 해 같았다.",
+    riceball: "세모 주먹밥 두 개. 하나는 내 것, 하나는 숲길에 두고 왔다.",
+    sandwich: "샌드위치를 반으로 자르니 단면이 무지개 같았다. 토마토가 제일 예뻤다.",
+    sundae: "초코 소스가 바닐라 위로 천천히 흘렀다. 밤이가 창가에서 조용히 보고 있었다.",
+    tteok: "떡볶이 소스가 끓을 때 부엌이 빨갛게 물든다. 밤톨 아저씨가 세 그릇 먹었다.",
+    pancake: "팬케이크 세 장. 버터가 녹는 걸 보는 건 언제나 좋다.",
+    gimbap: "김밥을 말다가 터질 뻔했다. 그래도 썰어 놓으니 꽃 같았다.",
+    omurice: "케첩으로 하트를 그리려다 잎사귀가 됐다. 그게 더 우리 부엌답다.",
+    pizza: "오븐 앞에서 치즈가 녹는 걸 기다리는 8초. 세상에서 제일 긴 8초.",
+    hotteok: "호떡 안에서 설탕이 흘러나왔다. 손이 뜨거웠지만 멈출 수 없었다.",
+    jeon: "파전 뒤집기 성공! 솔이가 장작을 딱 맞게 넣어 준 덕분이다.",
+    dumpling: "만두 열두 개를 빚었다. 하나는 좀 삐뚤었는데 그게 제일 맛있었다.",
+    curry: "카레를 저으며 창밖을 봤다. 바람이 지나가는 길이 보였다.",
+    cookie: "쿠키가 구워지는 냄새에 토리가 창문으로 뛰어들어왔다.",
+    fries: "감자 껍질을 다 깎는 데 한참 걸렸다. 바삭한 소리가 보상이었다.",
+    cake: "딸기를 올리는 손이 떨렸다. 달래가 '완벽한 대칭'이라고 했다.",
+    burger: "햄버거는 다섯 단계. 끝까지 하고 나니 손님들이 박수를 쳤다.",
+    secret: "비밀 레시피: 바람 수프. 숲의 바람을 한 국자 넣는 게 비법이다.",
+  };
+  const DECOR = [
+    { at: 5, name: "창가 화분", svg: '<svg viewBox="0 0 34 34"><path d="M10 22h14l-2 9H12z" fill="#c4552f" stroke="#5a3a22" stroke-width="1.3"/><path d="M17 22q-8-6-5-14 6 2 5 14zM17 22q8-6 5-14-6 2-5 14z" fill="#7fa86a" stroke="#5a3a22" stroke-width="1.2"/></svg>' },
+    { at: 10, name: "벽 액자", svg: '<svg viewBox="0 0 34 34"><rect x="5" y="6" width="24" height="22" fill="#fffdf6" stroke="#8a5a35" stroke-width="3"/><path d="M8 24l6-8 5 6 4-4 3 6z" fill="#7fa86a"/><circle cx="23" cy="12" r="2.5" fill="#f2b544"/></svg>' },
+    { at: 15, name: "새 앞치마", svg: '<svg viewBox="0 0 34 34"><path d="M11 6h12v8q6 2 6 10v6H5v-6q0-8 6-10z" fill="#f6c1cc" stroke="#5a3a22" stroke-width="1.3"/><path d="M15 20q2-3 4 0" fill="none" stroke="#7fa86a" stroke-width="1.5"/></svg>' },
+    { at: 20, name: "황금 등불", svg: '<svg viewBox="0 0 34 34"><rect x="10" y="8" width="14" height="18" rx="3" fill="#f2b544" stroke="#5a3a22" stroke-width="1.3"/><rect x="13" y="4" width="8" height="4" fill="#8a5a35"/><circle cx="17" cy="17" r="4" fill="#fff6dc"/></svg>' },
+  ];
+
   // ================= recipes =================
   const RECIPES = [
     { id: "rice", name: "계란볶음밥", level: "쉬움",
@@ -1560,9 +1827,20 @@
       steps: () => [makeStir(STIR.dough), makeSqueeze(SQUEEZE.cookie), makePlace(PLACE.cookie), makeHeat(HEAT.ovenCookie)] },
     { id: "burger", name: "햄버거", level: "어려움",
       steps: () => [makeSqueeze(SQUEEZE.patty), makeHeat(HEAT.pan), makeFlip(FLIP.patty), makeChop(CHOP.tomato), makePlace(PLACE.burger)] },
+    { id: "secret", name: "지원이의 비밀 레시피", level: "어려움", hidden: true,
+      steps: () => [makeChop(CHOP.onion), makeChop(CHOP.carrot), makeHeat(HEAT.pot), makeStir(STIR.curry), makeFlip(FLIP.jeon), makePlace(PLACE.salad)] },
   ];
+  DISHES.secret = function () {
+    ctx.beginPath(); ctx.arc(250, 212, 160, 0, Math.PI * 2); ctx.fillStyle = "#fffdf6"; ctx.fill(); ctx.strokeStyle = "#5a3a22"; ctx.lineWidth = 2.2; ctx.stroke();
+    ctx.beginPath(); ctx.arc(250, 212, 135, 0, Math.PI * 2); ctx.fillStyle = "#cfe3c4"; ctx.fill();
+    for (let i = 0; i < 7; i++) drawLeaf(250 + Math.cos(i) * (40 + i * 10), 212 + Math.sin(i * 1.7) * 50, i, 1.6, i % 2 ? "#7fa86a" : "#f2b544");
+    ctx.beginPath(); ctx.ellipse(205, 175, 40, 14, -0.4, 0, Math.PI * 2); ctx.fillStyle = "rgba(255,255,255,0.5)"; ctx.fill();
+  };
+  Object.keys(DISHES).forEach(id => { const orig = DISHES[id]; DISHES[id] = () => { orig(); inkFinish(id); }; });
   const LEVELS = ["쉬움", "보통", "어려움"];
   RECIPES.sort((a, b) => LEVELS.indexOf(a.level) - LEVELS.indexOf(b.level));
+  const specialId = () => { const pool = RECIPES.filter(r => !r.hidden); return pool[hashStr("special" + dayKey()) % pool.length].id; };
+  const secretOpen = best => RECIPES.filter(r => !r.hidden).every(r => best[r.id] >= 95);
   RECIPES.forEach(r => { r.blurb = r.steps().map(s => s.name).join(" · "); });
 
   // ================= flow =================
@@ -1589,42 +1867,60 @@
     ctx = saved;
   }
 
-  let menuFilter = "전체", greeted = false;
+  let menuFilter = "전체", greeted = false, greetedNight = false;
+  const leafEl = document.getElementById("leaves");
+  function renderLeaves(n) { leafEl.lastChild.textContent = " " + n; }
   function menu() {
     recipe = null; steps = []; results = []; details = []; cur = -1; scene = null; running = false;
     renderSteps();
     recipeEl.textContent = "메뉴를 골라 주세요";
     say((greeted ? "" : "안녕하세요! 저는 지원이에요. ") + "오늘은 뭘 만들어 볼까요? 먹고 싶은 요리를 골라 주세요.", "happy");
     greeted = true;
-    const best = loadBest();
-    const cleared = RECIPES.filter(r => best[r.id] != null).length;
-    const list = RECIPES.filter(r => menuFilter === "전체" || r.level === menuFilter);
-    show('<div class="card menu-card"><div class="eyebrow">메뉴판 · ' + RECIPES.length + "가지 요리 · " + cleared + '개 완성</div><h2>무엇을 만들까요?</h2>' +
+    armSleep();
+    const best = loadBest(), pr = loadProgress();
+    const visible = RECIPES.filter(r => !r.hidden);
+    const cleared = visible.filter(r => best[r.id] != null).length;
+    const open = secretOpen(best);
+    const sp = specialId();
+    const list = RECIPES.filter(r => (menuFilter === "전체" || r.level === menuFilter) && (!r.hidden || open || menuFilter === "어려움"));
+    const guests = activeGuests(cleared);
+    renderLeaves(pr.leaves);
+    show('<div class="card menu-card"><div class="eyebrow">메뉴판 · ' + visible.length + "가지 요리 · " + cleared + '개 완성</div><h2>무엇을 만들까요?</h2>' +
+      '<div class="guests">' + GUESTS.filter(g => !g.night || isNight()).map(g => {
+        const here = guests.includes(g), oid = guestOrder(g), rec = RECIPES.find(r => r.id === oid), done = pr.orders[dayKey() + g.id];
+        return '<div class="guest' + (here ? "" : " locked") + '">' + g.svg + "<span><b>" + g.name + "</b>" +
+          (here ? (done ? "오늘 주문 완료 · 고마워요!" : '"' + rec.name + ' 주세요!" · 나뭇잎 +10') : g.kind + " · " + g.need + "개 완성하면 와요") + "</span></div>";
+      }).join("") + "</div>" +
       '<div class="chips">' + ["전체", ...LEVELS].map((l, i) =>
         '<button type="button" class="chip' + (l === menuFilter ? " on" : "") + '" id="lv-' + i + '" aria-pressed="' + (l === menuFilter) + '">' + l + "</button>").join("") + "</div>" +
       '<div class="menu">' +
-      list.map(r =>
-        '<button type="button" class="dish" id="dish-' + r.id + '"><canvas data-id="' + r.id + '" aria-hidden="true"></canvas>' +
-        '<span><span class="dish-name">' + r.name + '</span><span class="dish-meta">' + r.level + " · " +
-        (best[r.id] != null ? "최고 <b>" + best[r.id] + "</b>" : "도전!") + "</span></span></button>"
-      ).join("") + "</div></div>");
+      list.map(r => {
+        const locked = r.hidden && !open;
+        return '<button type="button" class="dish' + (r.id === sp ? " special" : "") + (locked ? " locked" : "") + '" id="dish-' + r.id + '"' + (locked ? ' aria-disabled="true"' : "") + '><canvas data-id="' + r.id + '" aria-hidden="true"></canvas>' +
+          '<span><span class="dish-name">' + (locked ? "???" : r.name) + '</span><span class="dish-meta">' +
+          (locked ? "모든 요리 S등급이면 열려요" : r.level + " · " + (best[r.id] != null ? "최고 <b>" + best[r.id] + "</b>" : "도전!")) + "</span>" +
+          (r.id === sp ? '<span class="tag">오늘의 특선 · 나뭇잎 2배</span>' : "") + "</span></button>";
+      }).join("") + "</div>" +
+      '<div class="shelf">' + DECOR.map(d => '<span class="' + (cleared >= d.at ? "" : "locked") + '">' + d.svg + (cleared >= d.at ? d.name : d.at + "개 완성") + "</span>").join("") + "</div></div>");
     ov.querySelectorAll(".dish canvas").forEach(c => drawThumb(c, c.dataset.id));
-    list.forEach(r => on("dish-" + r.id, () => startRecipe(r)));
+    list.forEach(r => { if (!(r.hidden && !open)) on("dish-" + r.id, () => startRecipe(r)); });
+    if (isNight() && !greetedNight) { greetedNight = true; say("밤이 왔어요. 부엉이 밤이가 창가에 앉았네요. 야식 만들까요?", "explain"); }
     ["전체", ...LEVELS].forEach((l, i) => on("lv-" + i, () => { menuFilter = l; menu(); }));
   }
 
   function startRecipe(r) {
     recipe = r; steps = r.steps(); results = []; details = []; cur = -1;
     recipeEl.textContent = "오늘의 요리 · " + r.name;
+    resetCombo(); feverTips = 0;
     intro(0);
   }
 
   function intro(i) {
     cur = i; scene = steps[i]; scene.init(); running = false; renderSteps();
-    say(scene.intro, "smile");
+    say(scene.intro, "explain");
     show('<div class="card"><div class="eyebrow">' + recipe.name + " · " + (i + 1) + "단계</div><h2>" + scene.name + "</h2><p>" + scene.intro +
       '</p><p class="rule">채점 기준 · ' + scene.rule + '</p><button id="btn-go" type="button">시작!</button></div>');
-    on("btn-go", () => { hide(); running = true; });
+    on("btn-go", () => { hide(); running = true; setMood("focus"); });
   }
 
   function finish(score, detail = "") {
@@ -1639,7 +1935,8 @@
                  score >= 60 ? "좋아요! 조금만 더 다듬으면 완벽해요." :
                  score >= 40 ? "괜찮아요, 조금만 더 연습해 봐요." :
                                "걱정 마세요, 지원이가 살짝 도와줄게요!";
-    say(line, score >= 40 ? "happy" : "oops");
+    say(line, score >= 95 ? "perfect" : score >= 60 ? "happy" : score >= 40 ? "sad" : "fail");
+    if (score < 60) resetCombo();
     setTimeout(() => {
       const last = cur === steps.length - 1;
       show('<div class="card"><div class="eyebrow">' + scene.name + '</div><div class="big">' + score + '<small style="font-size:1.2rem">점</small></div><h2>' + txt +
@@ -1660,12 +1957,37 @@
                                 ["참가", "#ffffff", "끝까지 완성했어요! 한 번 더 해 볼까요?"];
     const record = prevBest == null || total > prevBest;
     const grade = total >= 95 ? "S" : total >= 85 ? "A" : total >= 70 ? "B" : total >= 50 ? "C" : "D";
-    say(medal[2] + (record ? " 최고 기록이에요!" : ""), total >= 55 ? "happy" : "smile");
+    // rewards: first completion opens a diary page, guest orders pay leaf tips, the daily special pays double
+    const pr = loadProgress();
+    const first = !pr.diary[id];
+    const cleared = RECIPES.filter(r => !r.hidden && (loadBest()[r.id] != null)).length;
+    let tips = 0, notes = [];
+    if (total >= 55) {
+      tips += total >= 90 ? 6 : 3;
+      activeGuests(cleared - (first ? 1 : 0)).forEach(g => {
+        if (guestOrder(g) === id && !pr.orders[dayKey() + g.id]) { pr.orders[dayKey() + g.id] = true; tips += 10; notes.push(g.name + ": \"" + g.lines[hashStr(dayKey() + id) % g.lines.length] + "\" · 나뭇잎 +10"); }
+      });
+      if (id === specialId()) { tips *= 2; notes.push("오늘의 특선! 나뭇잎 2배"); }
+    }
+    if (feverTips) { tips += feverTips; notes.push("피버 타임 보너스 · 나뭇잎 +" + feverTips); }
+    if (first) pr.diary[id] = true;
+    pr.leaves += tips; saveProgress(pr); renderLeaves(pr.leaves);
+    const unlockedDecor = DECOR.find(d => d.at === cleared && first);
+    const nowOpen = first && secretOpen(loadBest());
+    const dallaeHere = activeGuests(cleared).some(g => g.id === "dallae");
+    const dallaeLine = dallaeHere && details[0] ? '달래: "' + details[0] + '… 괜찮군."' : "";
+    say(medal[2] + (record ? " 최고 기록이에요!" : ""), total >= 90 ? "touched" : total >= 55 ? "present" : "idle");
+    resetCombo();
     show('<div class="card"><div class="eyebrow">완성 · ' + recipe.name + '</div><div class="medal" style="background:' + medal[1] + '">' + medal[0] +
       '</div><div class="big">' + total + '<small style="font-size:1.2rem">점 · <span id="grade" class="grade">' + grade + '</span></small></div><ul class="scores">' +
       steps.map((s, i) => "<li><span>" + s.name + (details[i] ? '<small>' + details[i] + "</small>" : "") +
         "</span><b>" + results[i] + "</b></li>").join("") +
-      '</ul><div class="btn-row"><button id="btn-again" type="button" class="ghost">다시 하기</button><button id="btn-menu" type="button">다른 요리</button></div></div>');
+      '</ul>' + (tips ? '<div class="tip">나뭇잎 +' + tips + (notes.length ? " · " + notes.join(" · ") : "") + "</div>" : "") +
+      (dallaeLine ? '<p class="detail">' + dallaeLine + "</p>" : "") +
+      (first ? '<div class="note"><small>레시피 노트에 추가 · 지원이의 일기</small>' + (DIARY[id] || "") + "</div>" : "") +
+      (unlockedDecor ? '<div class="tip">부엌 꾸미기 해금: ' + unlockedDecor.name + "</div>" : "") +
+      (nowOpen ? '<div class="tip">모든 요리 S등급! 비밀 레시피가 열렸어요.</div>' : "") +
+      '<div class="btn-row"><button id="btn-again" type="button" class="ghost">다시 하기</button><button id="btn-menu" type="button">다른 요리</button></div></div>');
     on("btn-again", () => startRecipe(recipe));
     on("btn-menu", menu);
   }
@@ -1744,6 +2066,7 @@
       [[81, 2], [79, 1]], [[77, 2], [76, 1]], [[74, 1.5], [76, 0.5], [79, 1]], [[76, 3]],
       [[74, 1], [77, 1], [81, 1]], [[79, 2], [77, 1]], [[76, 1], [74, 1], [72, 1]], [[71, 2], [68, 1]],
     ];
+    let feverUp = 0;
     const F_NOTES = {};
     F_MELODY.forEach((bar, b) => { let pos = 0; bar.forEach(([m, d]) => { F_NOTES[b * 6 + pos * 2] = [m, d]; pos += d; }); });
 
@@ -1852,7 +2175,7 @@
         let i = PENTA.indexOf(melodyNote);
         i = clamp(i + [-2, -1, -1, 1, 1, 2][Math.floor(Math.random() * 6)], 0, PENTA.length - 1);
         melodyNote = PENTA[i];
-        vibes(melodyNote, t);
+        vibes(melodyNote + feverUp, t);
       }
       if (eighth === 0 && bar % 4 === 2) gust(t);
     }
@@ -1865,7 +2188,7 @@
       }
       epiano(arp[eighth], t + 0.004, eighth === 0 ? 0.04 : 0.028, 1.6, 1800);
       const mel = F_NOTES[(bar % 16) * 6 + eighth];
-      if (mel && bar >= 2) flute(mel[0], t, mel[1] * F_BEAT);
+      if (mel && bar >= 2) flute(mel[0] + feverUp, t, mel[1] * F_BEAT);
     }
     function tick() {
       if (mode === "forest") {
@@ -1922,7 +2245,7 @@
       if (!actx) return;
       if (document.hidden) actx.suspend(); else actx.resume();
     });
-    return { start, stop, next, mode: () => mode };
+    return { start, stop, next, mode: () => mode, setFever: v => { feverUp = v ? 12 : 0; } };
   })();
 
   const musicBtn = document.getElementById("btn-music");
@@ -1942,6 +2265,11 @@
   }
   ["pointerdown", "touchend", "click"].forEach(t => document.addEventListener(t, firstGesture, true));
 
+  (function timeOfDay() {
+    const h = new Date().getHours(), root = document.documentElement.style;
+    if (h >= 19 || h < 6) { root.setProperty("--moss", "#1b2d23"); root.setProperty("--moss-2", "#27402f"); root.setProperty("--paper", "#ece2c8"); }
+    else if (h < 11) { root.setProperty("--paper", "#f6f0de"); root.setProperty("--moss", "#2a4233"); }
+  })();
   menu();
 })();
 </script>
