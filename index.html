@@ -1,31 +1,36 @@
 <title>지원 키친</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Gowun+Dodum&display=swap">
 <style>
   /* Layout: one-screen game. Top bar (recipe + step dots), square-ish canvas stage with overlay cards, host character row at the bottom.
-     Single committed look: mint-tile kitchen, wood board, tomato buttons. */
+     Single committed look: "숲속 오두막" — moss-green cabin walls, cream paper cards, lantern-yellow buttons. */
   :root {
-    --tile: #dcefe7;
-    --tile-line: #c6e2d7;
-    --ink: #17423b;
-    --ink-soft: #4d6e66;
-    --card: #ffffff;
-    --tomato: #ff6b4a;
-    --tomato-dark: #d84e30;
-    --butter: #ffcc4d;
-    --leaf: #4caf6a;
-    --font-display: "Jua", "Apple SD Gothic Neo", system-ui, sans-serif;
+    --moss: #24392d;
+    --moss-2: #2f4a3a;
+    --moss-3: #3b5c48;
+    --paper: #f1ead6;
+    --paper-2: #f8f3e4;
+    --paper-line: #e3d7b8;
+    --paper-dash: #b8a983;
+    --ink: #2a3326;
+    --ink-soft: #6b6a55;
+    --cream-text: #f1ead6;
+    --cream-soft: #b9c7a8;
+    --lantern: #f2b544;
+    --lantern-dark: #c98f1f;
+    --leaf: #4f7d45;
+    --ember: #c4552f;
+    --font-display: "Gowun Batang", "Apple SD Gothic Neo", serif;
     --font-body: "Gowun Dodum", "Apple SD Gothic Neo", system-ui, sans-serif;
     color-scheme: light;
   }
   html, body { height: 100%; }
   body {
-    background-color: var(--tile);
+    background-color: var(--moss);
     background-image:
-      linear-gradient(var(--tile-line) 2px, transparent 2px),
-      linear-gradient(90deg, var(--tile-line) 2px, transparent 2px);
-    background-size: 48px 48px;
-    color: var(--ink);
+      radial-gradient(circle at 18% 12%, rgba(242,181,68,0.10), transparent 32%),
+      radial-gradient(circle at 85% 90%, rgba(159,194,138,0.10), transparent 36%);
+    color: var(--cream-text);
     font-family: var(--font-body);
     font-size: 16px;
     -webkit-user-select: none; user-select: none;
@@ -40,111 +45,119 @@
     box-sizing: border-box;
   }
   .top { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
-  .brand { font-family: var(--font-display); font-size: 1.6rem; line-height: 1; }
-  .recipe { color: var(--ink-soft); font-size: 0.95rem; }
+  .brand-row { display: flex; align-items: center; gap: 10px; }
+  .brand-row svg { width: 40px; height: 40px; flex: none; }
+  .brand { font-family: var(--font-display); font-weight: 700; font-size: 1.6rem; line-height: 1; }
+  .recipe { color: var(--cream-soft); font-size: 0.9rem; margin-top: 3px; }
   .top-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-  .music-btn { font-size: 0.9rem; padding: 6px 12px; border-radius: 999px; color: var(--ink-soft); background: var(--card); border: 2px solid var(--tile-line); box-shadow: none; }
-  .music-btn.on { color: var(--ink); border-color: var(--ink); }
+  .music-btn { font-family: var(--font-body); font-weight: 700; font-size: 0.9rem; padding: 7px 14px; border-radius: 12px; color: var(--moss); background: var(--lantern); border: 0; box-shadow: none; }
+  .music-btn:not(.on) { background: var(--moss-2); color: var(--cream-soft); }
   .music-btn:active { transform: none; box-shadow: none; }
-  .steps { list-style: none; margin: 0; padding: 0; display: flex; gap: 6px; }
+  .steps { list-style: none; margin: 0; padding: 0; display: flex; gap: 7px; align-items: center; }
   .steps li {
-    font-family: var(--font-display); font-size: 0.85rem;
-    padding: 4px 10px; border-radius: 999px;
-    background: var(--card); color: var(--ink-soft); border: 2px solid var(--tile-line);
+    width: 12px; height: 12px; border-radius: 50%; box-sizing: border-box;
+    border: 2px solid #6f8a6a; font-size: 0; overflow: hidden;
   }
-  .steps li.current { border-color: var(--tomato); color: var(--tomato-dark); }
-  .steps li.done { background: var(--ink); border-color: var(--ink); color: var(--card); }
+  .steps li.current { border-color: var(--lantern); }
+  .steps li.done { background: var(--lantern); border-color: var(--lantern); }
 
   .stage-wrap { min-height: 0; display: grid; place-items: center; }
   .stage {
     position: relative;
     width: min(100%, 640px, calc((100dvh - 210px) * 1.25));
     aspect-ratio: 5 / 4; max-width: 100%;
-    border-radius: 18px; overflow: hidden;
-    box-shadow: 0 6px 0 var(--tile-line);
-    background: #f7fbf9;
+    border-radius: 22px; overflow: hidden;
+    background: var(--paper);
+    box-shadow: inset 0 0 0 6px var(--paper-line), 0 10px 24px rgba(0,0,0,0.25);
   }
   canvas { display: block; width: 100%; height: 100%; touch-action: none; }
 
   .overlay {
     position: absolute; inset: 0;
     display: flex;
-    background: rgba(23, 66, 59, 0.35);
+    background: rgba(36, 57, 45, 0.55);
     padding: 16px; overflow-y: auto;
   }
   .overlay[hidden] { display: none; }
   .card {
-    background: var(--card); border-radius: 16px;
+    background: var(--paper); color: var(--ink); border-radius: 18px;
     padding: 20px 22px; width: min(100%, 360px);
     display: grid; gap: 10px; text-align: center;
-    box-shadow: 0 6px 0 rgba(23, 66, 59, 0.25);
+    box-shadow: inset 0 0 0 6px var(--paper-line), 0 8px 20px rgba(0,0,0,0.25);
     box-sizing: border-box; margin: auto;
   }
   .card.wide { width: min(100%, 440px); }
-  .card h2 { font-family: var(--font-display); font-weight: 400; font-size: 1.7rem; margin: 0; text-wrap: balance; }
+  .card h2 { font-family: var(--font-display); font-weight: 700; font-size: 1.6rem; margin: 0; text-wrap: balance; }
   .card p { margin: 0; color: var(--ink-soft); line-height: 1.5; }
-  .eyebrow { font-family: var(--font-display); font-size: 0.85rem; letter-spacing: 0.08em; color: var(--tomato-dark); }
-  .big { font-family: var(--font-display); font-size: 3rem; line-height: 1; color: var(--ink); font-variant-numeric: tabular-nums; }
+  .card .rule { font-size: 0.82rem; color: var(--ink-soft); background: var(--paper-2); border: 1px dashed var(--paper-dash); border-radius: 10px; padding: 8px 10px; line-height: 1.45; }
+  .eyebrow { font-family: var(--font-body); font-size: 0.8rem; letter-spacing: 0.12em; color: var(--leaf); }
+  .big { font-family: var(--font-display); font-weight: 700; font-size: 3rem; line-height: 1; color: var(--ink); font-variant-numeric: tabular-nums; }
+  .detail { font-size: 0.92rem; color: var(--ink-soft); }
   .scores { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; text-align: left; }
-  .scores li { display: flex; justify-content: space-between; border-bottom: 1px dashed var(--tile-line); padding: 4px 0; }
-  .scores b { font-family: var(--font-display); font-weight: 400; font-variant-numeric: tabular-nums; }
+  .scores li { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; border-bottom: 1px dashed var(--paper-dash); padding: 5px 0; }
+  .scores li span { min-width: 0; }
+  .scores small { display: block; font-size: 0.78rem; color: var(--ink-soft); }
+  .scores b { font-family: var(--font-display); font-weight: 700; font-variant-numeric: tabular-nums; flex: none; }
   .medal {
     width: 72px; height: 72px; border-radius: 50%; margin: 0 auto;
     display: grid; place-items: center;
-    font-family: var(--font-display); font-size: 1.1rem; color: var(--ink);
-    border: 4px solid var(--card); box-shadow: 0 0 0 3px var(--ink);
+    font-family: var(--font-display); font-weight: 700; font-size: 1.1rem; color: var(--ink);
+    border: 4px solid var(--paper); box-shadow: 0 0 0 3px var(--moss-2);
   }
+  .grade { font-family: var(--font-display); font-weight: 700; font-size: 1.1rem; color: var(--leaf); }
   button {
-    font-family: var(--font-display); font-size: 1.25rem;
-    color: #fff; background: var(--tomato);
+    font-family: var(--font-body); font-weight: 700; font-size: 1.15rem;
+    color: var(--moss); background: var(--lantern);
     border: 0; border-radius: 12px; padding: 12px 18px;
-    box-shadow: 0 4px 0 var(--tomato-dark);
+    box-shadow: 0 4px 0 var(--lantern-dark);
     cursor: pointer;
   }
-  button:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--tomato-dark); }
-  button:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
-  button.ghost { background: var(--card); color: var(--ink); box-shadow: 0 4px 0 var(--tile-line); border: 2px solid var(--tile-line); }
+  button:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--lantern-dark); }
+  button:focus-visible { outline: 3px solid var(--moss); outline-offset: 3px; }
+  button.ghost { background: var(--paper-2); color: var(--ink); box-shadow: none; border: 1.5px solid var(--paper-dash); }
   .btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
   .btn-row button { flex: 1 1 140px; }
 
-  .card.menu-card { width: min(100%, 600px); padding: 16px; gap: 8px; }
-  .menu { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; }
+  .card.menu-card { width: min(100%, 600px); padding: 16px; gap: 10px; }
+  .menu { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
   .chips { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; }
-  .chip { font-size: 0.95rem; padding: 6px 14px; border-radius: 999px; color: var(--ink); background: var(--card); border: 2px solid var(--tile-line); box-shadow: none; }
-  .chip.on { background: var(--ink); border-color: var(--ink); color: var(--card); }
+  .chip { font-size: 0.9rem; font-weight: 400; padding: 6px 14px; border-radius: 999px; color: #4f5a45; background: transparent; border: 1.5px solid var(--paper-dash); box-shadow: none; }
+  .chip.on { background: var(--moss-2); border-color: var(--moss-2); color: var(--cream-text); }
   .chip:active { transform: none; box-shadow: none; }
   .dish {
-    display: grid; grid-template-columns: 48px 1fr; align-items: center; gap: 10px;
-    text-align: left; color: var(--ink); background: var(--card);
-    border: 2px solid var(--tile-line); box-shadow: 0 3px 0 var(--tile-line);
-    padding: 6px 10px; min-width: 0;
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+    text-align: center; color: var(--ink); background: var(--paper-2);
+    border: 1.5px dashed var(--paper-dash); box-shadow: none; border-radius: 16px;
+    padding: 12px 8px 10px; min-width: 0;
   }
-  .dish:active { box-shadow: 0 1px 0 var(--tile-line); }
-  .dish canvas { width: 48px; height: 48px; }
-  .dish-name { font-family: var(--font-display); font-size: 1.15rem; display: block; line-height: 1.2; }
-  .dish-meta { font-family: var(--font-body); font-size: 0.8rem; color: var(--ink-soft); display: block; }
-  .dish-meta b { font-family: var(--font-display); font-weight: 400; color: var(--tomato-dark); font-variant-numeric: tabular-nums; }
+  .dish:active { transform: none; background: var(--paper-line); }
+  .dish canvas { width: 56px; height: 56px; border-radius: 50%; background: #fff; box-shadow: 0 0 0 3px var(--paper-line); }
+  .dish-name { font-family: var(--font-display); font-weight: 700; font-size: 1.1rem; display: block; line-height: 1.2; }
+  .dish-meta { font-family: var(--font-body); font-weight: 400; font-size: 0.78rem; color: var(--ink-soft); display: block; }
+  .dish-meta b { font-family: var(--font-display); font-weight: 700; color: var(--ember); font-variant-numeric: tabular-nums; }
 
   .host { display: flex; align-items: center; gap: 12px; }
-  .host svg { flex: none; width: 64px; height: 64px; }
+  .host svg { flex: none; width: 60px; height: 60px; }
   .bubble {
     position: relative; min-width: 0; flex: 1;
-    background: var(--card); border-radius: 14px; padding: 10px 14px;
-    font-size: 1.02rem; line-height: 1.45;
-    box-shadow: 0 3px 0 var(--tile-line);
+    background: var(--paper); color: var(--ink); border-radius: 18px; padding: 11px 16px;
+    font-size: 1rem; line-height: 1.45;
   }
   .bubble::before {
     content: ""; position: absolute; left: -8px; top: 50%; margin-top: -8px;
-    border: 8px solid transparent; border-left: 0; border-right-color: var(--card);
+    border: 8px solid transparent; border-left: 0; border-right-color: var(--paper);
   }
   @media (prefers-reduced-motion: reduce) { button:active { transform: none; } }
 </style>
 
 <div class="app">
   <header class="top">
-    <div>
-      <div class="brand">지원 키친</div>
-      <div class="recipe" id="recipe">메뉴를 골라 주세요</div>
+    <div class="brand-row">
+      <svg viewBox="0 0 46 46" aria-hidden="true"><path d="M23 4 L40 20 L36 20 L36 40 L10 40 L10 20 L6 20 Z" fill="#8a5a35"/><rect x="19" y="27" width="8" height="13" fill="#f2b544"/><path d="M30 8 q6 -4 10 2" fill="none" stroke="#9fc28a" stroke-width="3" stroke-linecap="round"/></svg>
+      <div>
+        <div class="brand">지원 키친</div>
+        <div class="recipe" id="recipe">메뉴를 골라 주세요</div>
+      </div>
     </div>
     <div class="top-right">
       <ol class="steps" id="steps"></ol>
@@ -222,6 +235,22 @@
   // ---------- helpers ----------
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
   const lerp = (a, b, t) => a + (b - a) * t;
+  // piecewise-linear map: pw(x, [[x0,y0],[x1,y1],...]) with x ascending; clamps outside the ends
+  function pw(x, pts) {
+    if (x <= pts[0][0]) return pts[0][1];
+    for (let i = 1; i < pts.length; i++) {
+      const [x0, y0] = pts[i - 1], [x1, y1] = pts[i];
+      if (x <= x1) return lerp(y0, y1, (x - x0) / (x1 - x0));
+    }
+    return pts[pts.length - 1][1];
+  }
+  // timing meters: pos = (sin(swing)+1)/2 hits the center whenever swing is a multiple of PI
+  function timingErrMs(swing, w) {
+    const m = ((swing % Math.PI) + Math.PI) % Math.PI;
+    return Math.min(m, Math.PI - m) / w * 1000;
+  }
+  const timingScore = ms => pw(ms, [[40, 100], [120, 60], [300, 0]]);
+  const TIMING_RULE = "바늘이 초록 칸 정중앙을 지나는 순간과 누른 순간의 시간 차이로 채점: ±40ms 이내 100점, 120ms 60점, ±300ms 이상 0점 (평균)";
   function rr(x, y, w, h, r) {
     ctx.beginPath();
     ctx.moveTo(x + r, y);
@@ -237,12 +266,12 @@
     return "rgb(" + a.map((v, i) => Math.round(lerp(v, b[i], t))).join(",") + ")";
   }
   function timerBar(frac) {
-    rr(20, 14, W - 40, 12, 6); ctx.fillStyle = "#e3eee9"; ctx.fill();
+    rr(20, 14, W - 40, 12, 6); ctx.fillStyle = "#e3d7b8"; ctx.fill();
     const w = Math.max(0, (W - 40) * (1 - frac));
     if (w > 1) { rr(20, 14, w, 12, 6); ctx.fillStyle = frac > 0.75 ? "#ff6b4a" : "#4caf6a"; ctx.fill(); }
   }
-  function label(text, x, y, size = 18, color = "#17423b") {
-    ctx.font = size + 'px "Jua", system-ui, sans-serif';
+  function label(text, x, y, size = 18, color = "#2a3326") {
+    ctx.font = 'bold ' + size + 'px "Gowun Batang", serif';
     ctx.textAlign = "center"; ctx.textBaseline = "middle";
     ctx.fillStyle = color; ctx.fillText(text, x, y);
   }
@@ -256,7 +285,7 @@
       f.life -= dt * 1.2; f.y -= dt * 40;
       if (f.life <= 0) { floats.splice(i, 1); continue; }
       ctx.globalAlpha = clamp(f.life * 1.5, 0, 1);
-      ctx.font = '30px "Jua", system-ui, sans-serif';
+      ctx.font = 'bold 30px "Gowun Batang", serif';
       ctx.textAlign = "center"; ctx.textBaseline = "middle";
       ctx.lineWidth = 6; ctx.strokeStyle = "#fff"; ctx.strokeText(f.text, f.x, f.y);
       ctx.fillStyle = f.color; ctx.fillText(f.text, f.x, f.y);
@@ -264,10 +293,11 @@
     }
   }
   function judge(score) {
-    if (score >= 90) return ["완벽!", "#ff6b4a"];
-    if (score >= 70) return ["좋아요!", "#4caf6a"];
-    if (score >= 40) return ["괜찮아요", "#d49a00"];
-    return ["아쉬워요", "#7a8f89"];
+    if (score >= 95) return ["완벽!", "#ff6b4a"];
+    if (score >= 80) return ["훌륭해요", "#4caf6a"];
+    if (score >= 60) return ["좋아요", "#2f8fbf"];
+    if (score >= 40) return ["아쉬워요", "#d49a00"];
+    return ["실패", "#7a8f89"];
   }
 
   // ================= minigames =================
@@ -298,42 +328,56 @@
   function makeChop(cfg) {
     const LINES = [150, 195, 240, 285, 330, 375];
     const LIMIT = 15;
-    let cut, accs, misses, t, trail, start, done;
+    const MIDY = 215;
+    let cut, accs, offs, misses, t, trail, start, stroke, done;
     function finishChop() {
       done = true;
-      const sum = accs.reduce((a, b) => a + b, 0);
-      finish(Math.round(clamp((sum / LINES.length) * 100 - misses * 5, 0, 100)));
+      const sum = accs.reduce((a, b) => a + b, 0); // uncut lines count as 0
+      const avg = offs.length ? offs.reduce((a, b) => a + b, 0) / offs.length : null;
+      finish(Math.round(clamp(sum / LINES.length - misses * 4, 0, 100)),
+        (avg == null ? "자른 줄 없음" : "평균 오차 " + avg.toFixed(1) + "px") + " · 빗나감 " + misses + "회" +
+        (cut.every(Boolean) ? "" : " · 못 자름 " + cut.filter(c => !c).length + "줄"));
     }
     return {
       name: cfg.name, intro: cfg.intro,
-      init() { cut = LINES.map(() => false); accs = []; misses = 0; t = 0; trail = []; start = null; done = false; },
+      rule: "칼이 재료 가운데 높이를 지나는 위치와 점선의 거리로 채점: 3px 이내 100점, 20px에서 0점 · 세로에서 10° 넘게 기울면 감점(35°에서 ×0.8) · 빗나감 1회 −4점 · 못 자른 줄 0점",
+      init() { cut = LINES.map(() => false); accs = []; offs = []; misses = 0; t = 0; trail = []; start = null; stroke = []; done = false; },
       update(dt) {
         t += dt;
         trail.forEach(p => (p.life -= dt * 3));
         trail = trail.filter(p => p.life > 0);
         if (!done && t >= LIMIT) finishChop();
       },
-      down(p) { start = p; trail.push({ ...p, life: 1 }); },
-      move(p) { if (start) trail.push({ ...p, life: 1 }); },
+      down(p) { start = p; stroke = [p]; trail.push({ ...p, life: 1 }); },
+      move(p) { if (start) { stroke.push(p); trail.push({ ...p, life: 1 }); } },
       up(p) {
         if (!start || done) return;
-        const dy = Math.abs(p.y - start.y), dx = Math.abs(p.x - start.x);
-        const x = (p.x + start.x) / 2;
-        start = null;
-        if (dy < 35 || dx > 70) return;
+        stroke.push(p);
+        const pts = stroke, s0 = start;
+        start = null; stroke = [];
+        // where does the stroke cross the food's middle (y = MIDY)? the stroke must span the food band there
+        let crossX = null;
+        for (let i = 1; i < pts.length && crossX == null; i++) {
+          const a = pts[i - 1], b = pts[i];
+          if ((a.y - MIDY) * (b.y - MIDY) <= 0 && a.y !== b.y) crossX = a.x + (b.x - a.x) * (MIDY - a.y) / (b.y - a.y);
+        }
+        const ys = pts.map(q => q.y);
+        if (crossX == null) return; // never passed through the food band
+        if (Math.max(...ys) - Math.min(...ys) < 20) return; // a tap, not a cut
+        const ang = Math.atan2(Math.abs(p.x - s0.x), Math.abs(p.y - s0.y)) * 180 / Math.PI;
         let best = -1, bd = 1e9;
-        LINES.forEach((lx, i) => { if (!cut[i] && Math.abs(lx - x) < bd) { bd = Math.abs(lx - x); best = i; } });
-        if (best >= 0 && bd < 22) {
+        LINES.forEach((lx, i) => { if (!cut[i] && Math.abs(lx - crossX) < bd) { bd = Math.abs(lx - crossX); best = i; } });
+        if (best >= 0 && bd <= 20) {
           cut[best] = true;
-          const acc = clamp(1 - Math.max(0, bd - 4) / 18, 0, 1);
-          accs.push(acc);
-          const [txt, col] = judge(acc * 100);
-          pop(txt, LINES[best], 150, col);
-          beep(500 + acc * 400, 0.07, "triangle");
+          const acc = pw(bd, [[3, 100], [20, 0]]) * pw(ang, [[10, 1], [35, 0.8]]);
+          accs.push(acc); offs.push(bd);
+          const [txt, col] = judge(acc);
+          pop(txt + " " + bd.toFixed(1) + "px", LINES[best], 150, col);
+          beep(500 + acc * 4, 0.07, "triangle");
           if (cut.every(Boolean)) finishChop();
         } else {
           misses++;
-          pop("빗나감", x, 150, "#7a8f89");
+          pop("빗나감", crossX, 150, "#7a8f89");
           beep(180, 0.1, "square", 0.04);
         }
       },
@@ -378,12 +422,13 @@
 
   // ---------- egg: tap when the needle is in the green ----------
   function makeEgg(count) {
-    let idx, phase, swing, pos, anim, scores, yolks;
+    let idx, phase, swing, pos, anim, scores, errs, yolks;
     const slotX = i => count === 1 ? 250 : 220 + i * 60;
     return {
       name: "계란 깨기",
       intro: "바늘이 초록 칸 한가운데 올 때 화면을 톡 눌러 계란을 깨요. 계란은 " + count + "개예요.",
-      init() { idx = 0; phase = "aim"; swing = 0; pos = 0; anim = 0; scores = []; yolks = []; },
+      rule: TIMING_RULE,
+      init() { idx = 0; phase = "aim"; swing = 0; pos = 0; anim = 0; scores = []; errs = []; yolks = []; },
       update(dt) {
         if (phase === "aim") { swing += dt * (2.4 + idx * 1.1); pos = (Math.sin(swing) + 1) / 2; }
         else if (phase === "crack") {
@@ -391,18 +436,18 @@
           if (anim > 0.9) {
             yolks.push({ x: slotX(idx), y: 312 });
             idx++;
-            if (idx >= count) { phase = "end"; finish(Math.round(scores.reduce((a, b) => a + b, 0) / count)); }
+            if (idx >= count) { phase = "end"; finish(Math.round(scores.reduce((a, b) => a + b, 0) / count), "평균 오차 " + Math.round(errs.reduce((a, b) => a + b, 0) / count) + "ms"); }
             else { phase = "aim"; swing = Math.random() * 6; }
           }
         }
       },
       down() {
         if (phase !== "aim") return;
-        const d = Math.abs(pos - 0.5);
-        const s = Math.round(clamp(100 - Math.max(0, d - 0.03) * 380, 0, 100));
-        scores.push(s);
+        const ms = timingErrMs(swing, 2.4 + idx * 1.1);
+        const s = timingScore(ms);
+        scores.push(s); errs.push(ms);
         const [txt, col] = judge(s);
-        pop(txt, 250, 150, col);
+        pop(txt + " " + Math.round(ms) + "ms", 250, 150, col);
         beep(s >= 70 ? 880 : 300, 0.09, "triangle");
         phase = "crack"; anim = 0;
       },
@@ -453,17 +498,24 @@
     ovenCake: { name: "오븐에 굽기", vessel: "oven", food: "cake", intro: "꾹 누르면 오븐이 뜨거워지고, 떼면 식어요. 초록 칸 안에 오래 있을수록 빵이 폭신하게 부풀어요." },
   };
   function makeHeat(cfg) {
-    const DUR = 8, LO = 55, HI = 75;
-    let temp, holding, inZone, burnt, t;
+    const DUR = 8, LO = 55, HI = 75, MID = 65, WARM = 1.5;
+    let temp, holding, inZone, burnt, t, mTime, mClose, mIn;
+    const closeness = v => pw(Math.abs(v - MID), [[3, 1], [HI - MID, 0.8], [HI - MID + 12, 0]]);
     return {
       name: cfg.name, intro: cfg.intro,
-      init() { temp = 20; holding = false; inZone = 0; burnt = 0; t = 0; },
+      rule: "처음 1.5초(예열)는 빼고 매 순간 채점: 65도 ±3 이내 100%, 칸 끝(55·75도)까지 80%로 줄고, 칸 밖으로 12도 벗어나면 0% · 점수 = 평균 × 100",
+      init() { temp = 20; holding = false; inZone = 0; burnt = 0; t = 0; mTime = 0; mClose = 0; mIn = 0; },
       update(dt) {
         temp = clamp(temp + (holding ? 38 : -24) * dt, 0, 100);
         if (temp >= LO && temp <= HI) inZone += dt;
         if (temp > HI) burnt += dt;
+        const w = Math.max(0, Math.min(t + dt, DUR) - Math.max(t, WARM));
+        if (w > 0) { mTime += w; mClose += closeness(temp) * w; if (temp >= LO && temp <= HI) mIn += w; }
         t += dt;
-        if (t >= DUR) { t = DUR; finish(Math.round(clamp((inZone / DUR) * 115, 0, 100))); }
+        if (t >= DUR) {
+          t = DUR;
+          finish(Math.round(100 * (mTime ? mClose / mTime : 0)), "적정 온도 유지 " + Math.round(100 * (mTime ? mIn / mTime : 0)) + "%");
+        }
       },
       down() { holding = true; beep(220, 0.06, "sawtooth", 0.03); },
       up() { holding = false; },
@@ -567,14 +619,16 @@
     let level, stream, holding, idle, t, done, poured;
     function evaluate() {
       done = true;
-      const c = (cfg.lo + cfg.hi) / 2, h = (cfg.hi - cfg.lo) / 2, d = Math.abs(level - c);
-      const s = level >= 1 ? 0 : d <= h ? Math.round(100 - (d / h) * 15) : Math.round(clamp(85 - (d - h) * 500, 0, 85));
+      const c = (cfg.lo + cfg.hi) / 2, h = (cfg.hi - cfg.lo) / 2 * 100, e = (level - c) * 100, d = Math.abs(e);
+      const s = level >= 1 ? 0 : Math.round(pw(d, [[1, 100], [h, 70], [h + 12, 0]]));
       const [txt, col] = judge(s);
       pop(txt, 250, CY1 - level * (CY1 - CY0) - 30, col);
-      finish(s);
+      finish(s, level >= 1 ? "넘쳤어요 (목표보다 +" + (100 - c * 100).toFixed(1) + "%)" : "목표보다 " + (e >= 0 ? "+" : "-") + d.toFixed(1) + "%");
     }
+    const HALF = ((cfg.hi - cfg.lo) / 2 * 100).toFixed(1);
     return {
       name: cfg.name, intro: cfg.intro,
+      rule: "멈춘 높이와 초록 칸 한가운데의 차이(컵 높이의 %)로 채점: 1% 이내 100점, 칸 끝(±" + HALF + "%)에서 70점, 거기서 12% 더 벗어나면 0점 · 넘치면 0점",
       init() { level = 0; stream = 0; holding = false; idle = 0; t = 0; done = false; poured = false; },
       update(dt) {
         if (done) return;
@@ -674,19 +728,29 @@
   };
   function makeStir(cfg) {
     const CX = 250, CY = 210, R = 150, NEED = cfg.need, LIMIT = 14;
-    let bits, total, prevA, t, ptr, done;
+    let bits, total, posA, negA, goodPos, goodNeg, prevA, t, ptr, done;
+    const control = () => total > 0 ? (posA >= negA ? goodPos : goodNeg) / total : 0;
+    function finishStir(timeout) {
+      done = true;
+      const prog = clamp(total / (NEED * Math.PI * 2), 0, 1);
+      const speed = timeout ? prog * 30 : pw(t, [[5, 100], [LIMIT, 30]]);
+      const c = control();
+      finish(Math.round(clamp(0.7 * speed + 0.3 * c * 100, 0, 100)),
+        (timeout ? "시간 초과 " + Math.floor(total / (Math.PI * 2)) + "/" + NEED + "바퀴" : t.toFixed(1) + "초") + " · 안정감 " + Math.round(c * 100) + "%");
+    }
     return {
       name: cfg.name, intro: cfg.intro,
+      rule: "속도 70% + 안정감 30%: 5초 안에 다 저으면 속도 100점, 14초면 30점 · 안정감 = 한 방향으로, 그릇 안쪽(가장자리·한가운데 제외)에서 저은 비율",
       init() {
         bits = [];
         cfg.bits.forEach(([n, kind]) => { for (let i = 0; i < n; i++) bits.push({ r: Math.sqrt(Math.random()) * 118, a: Math.random() * Math.PI * 2, rot: Math.random() * 3, kind }); });
         bits.sort(() => Math.random() - 0.5);
-        total = 0; prevA = null; t = 0; ptr = null; done = false;
+        total = 0; posA = 0; negA = 0; goodPos = 0; goodNeg = 0; prevA = null; t = 0; ptr = null; done = false;
       },
       update(dt) {
         if (done) return;
         t += dt;
-        if (t >= LIMIT) { done = true; finish(Math.round(clamp((total / (NEED * Math.PI * 2)) * 60, 0, 60))); }
+        if (t >= LIMIT) finishStir(true);
       },
       down(p) { ptr = p; prevA = null; this.move(p); },
       move(p) {
@@ -701,13 +765,12 @@
           if (d < -Math.PI) d += Math.PI * 2;
           const before = Math.floor(total / (Math.PI * 2));
           total += Math.abs(d);
+          const inRing = dist >= 35 && dist <= R - 5;
+          if (d >= 0) { posA += d; if (inRing) goodPos += d; } else { negA -= d; if (inRing) goodNeg -= d; }
           bits.forEach(b => { b.a += d * (0.35 + 0.5 * b.r / 118); });
           const after = Math.floor(total / (Math.PI * 2));
           if (after > before && after <= NEED) { pop(after + "바퀴!", CX, CY - 40, "#d49a00"); beep(520 + after * 80, 0.08, "triangle"); }
-          if (total >= NEED * Math.PI * 2) {
-            done = true;
-            finish(t <= 6 ? 100 : Math.round(clamp(100 - (t - 6) * 7, 45, 100)));
-          }
+          if (total >= NEED * Math.PI * 2) { finishStir(false); return; }
         }
         prevA = a;
       },
@@ -897,15 +960,21 @@
   }
   function makePlace(cfg) {
     const LIMIT = 15;
-    let spots, accs, misses, t, done;
+    let spots, accs, offs, misses, t, done;
+    const isStrip = cfg.spots.some(s => STRIP[s[2]]);
     function finishPlace() {
       done = true;
-      const sum = accs.reduce((a, b) => a + b, 0);
-      finish(Math.round(clamp((sum / spots.length) * 100 - misses * 5, 0, 100)));
+      const sum = accs.reduce((a, b) => a + b, 0); // unfilled spots count as 0
+      const avg = offs.length ? offs.reduce((a, b) => a + b, 0) / offs.length : null;
+      const left = spots.filter(s => !s.filled).length;
+      finish(Math.round(clamp(sum / spots.length - misses * 4, 0, 100)),
+        (avg == null ? "올린 재료 없음" : "평균 오차 " + avg.toFixed(1) + "px") + " · 빗나감 " + misses + "회" + (left ? " · 빈 자리 " + left + "개" : ""));
     }
     return {
       name: cfg.name, intro: cfg.intro,
-      init() { spots = cfg.spots.map(([x, y, kind]) => ({ x, y, kind, filled: false })); accs = []; misses = 0; t = 0; done = false; },
+      rule: isStrip ? "누른 곳과 줄 한가운데의 세로 거리로 채점: 2px 이내 100점, 12px에서 0점 · 빗나감 1회 −4점 · 빈 자리 0점"
+                    : "누른 곳과 자리 한가운데의 거리로 채점: 4px 이내 100점, 30px에서 0점 · 빗나감 1회 −4점 · 빈 자리 0점",
+      init() { spots = cfg.spots.map(([x, y, kind]) => ({ x, y, kind, filled: false })); accs = []; offs = []; misses = 0; t = 0; done = false; },
       update(dt) { t += dt; if (!done && t >= LIMIT) finishPlace(); },
       down(p) {
         if (done) return;
@@ -918,11 +987,11 @@
         const strip = best && STRIP[best.kind];
         if (best && bd < (strip ? 14 : 34)) {
           best.filled = true;
-          const acc = strip ? clamp(1 - Math.max(0, bd - 3) / 11, 0, 1) : clamp(1 - Math.max(0, bd - 6) / 28, 0, 1);
-          accs.push(acc);
-          const [txt, col] = judge(acc * 100);
-          pop(txt, best.x, best.y - 30, col);
-          beep(500 + acc * 400, 0.07, "triangle");
+          const acc = strip ? pw(bd, [[2, 100], [12, 0]]) : pw(bd, [[4, 100], [30, 0]]);
+          accs.push(acc); offs.push(bd);
+          const [txt, col] = judge(acc);
+          pop(txt + " " + bd.toFixed(1) + "px", best.x, best.y - 30, col);
+          beep(500 + acc * 4, 0.07, "triangle");
           if (spots.every(s => s.filled)) finishPlace();
         } else {
           misses++;
@@ -946,26 +1015,40 @@
   // ---------- roll: swipe up to roll the gimbap ----------
   function makeRoll() {
     const NEED = 4, LIMIT = 10;
-    let rolls, shown, t, start, done;
+    let rolls, crooked, shown, t, start, done;
+    function finishRoll(timeout) {
+      done = true;
+      const base = timeout ? rolls / NEED * 40 : pw(t, [[3, 100], [LIMIT, 40]]);
+      finish(Math.round(clamp(base - crooked * 8, 0, 100)),
+        (timeout ? "시간 초과 " + rolls + "/" + NEED + "번" : t.toFixed(1) + "초") + " · 삐뚤게 " + crooked + "회");
+    }
     return {
       name: "김밥 말기",
       intro: "김발을 아래에서 위로 힘차게 쓸어 올려서 김밥을 말아요. 네 번 쓸어 올리면 완성! 빠를수록 점수가 높아요.",
-      init() { rolls = 0; shown = 0; t = 0; start = null; done = false; },
+      rule: "60px 이상, 세로에서 25° 이내로 곧게 쓸어 올려야 1번: 4번을 3초 안에 끝내면 100점, 10초면 40점 · 삐뚤게 쓸면 1회 −8점",
+      init() { rolls = 0; crooked = 0; shown = 0; t = 0; start = null; done = false; },
       update(dt) {
         t += dt;
         shown = Math.min(rolls, shown + dt * 3);
-        if (!done && t >= LIMIT) { done = true; finish(Math.round((rolls / NEED) * 50)); }
+        if (!done && t >= LIMIT) finishRoll(true);
       },
       down(p) { start = p; },
       up(p) {
         if (!start || done) return;
         const dy = start.y - p.y, dx = Math.abs(p.x - start.x);
         start = null;
-        if (dy < 50 || dx > dy) return;
+        if (dy <= 20) return;
+        const ang = Math.atan2(dx, dy) * 180 / Math.PI;
+        if (dy < 60 || ang > 25) {
+          crooked++;
+          pop("삐뚤어요 " + Math.round(ang) + "°", 250, 120, "#7a8f89");
+          beep(180, 0.1, "square", 0.04);
+          return;
+        }
         rolls++;
         pop(rolls + "번!", 250, 120, "#d49a00");
         beep(440 + rolls * 90, 0.09, "triangle");
-        if (rolls >= NEED) { done = true; finish(t <= 4 ? 100 : Math.round(clamp(100 - (t - 4) * 10, 40, 100))); }
+        if (rolls >= NEED) finishRoll(false);
       },
       draw() {
         rr(70, 70, 360, 290, 10); ctx.fillStyle = "#d9c38c"; ctx.fill();
@@ -1002,21 +1085,32 @@
                                           { type: "ell", cx: 250, cy: 210, rx: 155, ry: 100 };
     const inside = (x, y) => shape.type === "rect" ? x > shape.x0 && x < shape.x1 && y > shape.y0 && y < shape.y1 :
       ((x - shape.cx) / shape.rx) ** 2 + ((y - shape.cy) / shape.ry) ** 2 < 0.85;
-    let cells, t, ptr, done, lastPct;
+    const onFood = (x, y) => shape.type === "rect" ? x >= shape.x0 && x <= shape.x1 && y >= shape.y0 && y <= shape.y1 :
+      ((x - shape.cx) / shape.rx) ** 2 + ((y - shape.cy) / shape.ry) ** 2 <= 1;
+    let cells, t, ptr, done, lastPct, samples, good;
+    function finishRub(timeout) {
+      done = true;
+      const speed = timeout ? coverage() * 30 : pw(t, [[5, 100], [LIMIT, 30]]);
+      const neat = samples ? good / samples : 0;
+      finish(Math.round(clamp(0.75 * speed + 0.25 * neat * 100, 0, 100)),
+        (timeout ? "시간 초과 " + Math.round(coverage() * 100) + "%" : t.toFixed(1) + "초") + " · 정확도 " + Math.round(neat * 100) + "%");
+    }
     const doneCell = c => cfg.mode === "peel" ? c.v <= 0.05 : c.v >= 0.95;
     const coverage = () => cells.filter(doneCell).length / cells.length;
     function apply(p) {
+      samples++; if (onFood(p.x, p.y)) good++;
       cells.forEach(c => {
         if (Math.hypot(c.x - p.x, c.y - p.y) < BRUSH) c.v = clamp(c.v + (cfg.mode === "peel" ? -0.5 : 0.5), 0, 1);
       });
       const cov = coverage(), pct = Math.floor(cov * 4);
       if (pct > lastPct && pct < 4) { lastPct = pct; pop(pct * 25 + "%", 250, 100, "#d49a00"); beep(500 + pct * 100, 0.06, "triangle"); }
-      if (cov >= 0.92 && !done) { done = true; finish(t <= 5 ? 100 : Math.round(clamp(100 - (t - 5) * 8, 40, 100))); }
+      if (cov >= 0.92 && !done) finishRub(false);
     }
     return {
       name: cfg.name, intro: cfg.intro,
+      rule: "속도 75% + 정확도 25%: 92%를 5초 안에 끝내면 속도 100점, 12초면 30점 · 정확도 = 손가락이 음식 위에 있었던 비율",
       init() {
-        cells = []; t = 0; ptr = null; done = false; lastPct = 0;
+        cells = []; t = 0; ptr = null; done = false; lastPct = 0; samples = 0; good = 0;
         const rnd = seeded(13);
         for (let x = 80; x <= 420; x += STEP) for (let y = 90; y <= 330; y += STEP)
           if (inside(x, y)) cells.push({ x, y, v: cfg.mode === "peel" ? 1 : 0, jx: rnd() * 6 - 3, jy: rnd() * 6 - 3, r: 9 + rnd() * 4 });
@@ -1024,7 +1118,7 @@
       update(dt) {
         if (done) return;
         t += dt;
-        if (t >= LIMIT) { done = true; finish(Math.round(coverage() * 60)); }
+        if (t >= LIMIT) finishRub(true);
       },
       down(p) { ptr = p; if (!done) apply(p); },
       move(p) { if (ptr && !done) { ptr = p; apply(p); } },
@@ -1088,28 +1182,29 @@
     ctx.restore();
   }
   function makeFlip(cfg) {
-    let idx, phase, swing, pos, anim, scores, side;
+    let idx, phase, swing, pos, anim, scores, errs, side;
     return {
       name: cfg.name, intro: cfg.intro,
-      init() { idx = 0; phase = "aim"; swing = 0; pos = 0; anim = 0; scores = []; side = 0; },
+      rule: TIMING_RULE,
+      init() { idx = 0; phase = "aim"; swing = 0; pos = 0; anim = 0; scores = []; errs = []; side = 0; },
       update(dt) {
         if (phase === "aim") { swing += dt * (2.4 + idx * 1.0); pos = (Math.sin(swing) + 1) / 2; }
         else if (phase === "flip") {
           anim += dt;
           if (anim > 0.8) {
             side++; idx++;
-            if (idx >= cfg.count) { phase = "end"; finish(Math.round(scores.reduce((a, b) => a + b, 0) / cfg.count)); }
+            if (idx >= cfg.count) { phase = "end"; finish(Math.round(scores.reduce((a, b) => a + b, 0) / cfg.count), "평균 오차 " + Math.round(errs.reduce((a, b) => a + b, 0) / cfg.count) + "ms"); }
             else { phase = "aim"; swing = Math.random() * 6; }
           }
         }
       },
       down() {
         if (phase !== "aim") return;
-        const d = Math.abs(pos - 0.5);
-        const s = Math.round(clamp(100 - Math.max(0, d - 0.03) * 380, 0, 100));
-        scores.push(s);
+        const ms = timingErrMs(swing, 2.4 + idx * 1.0);
+        const s = timingScore(ms);
+        scores.push(s); errs.push(ms);
         const [txt, col] = judge(s);
-        pop(txt, 230, 140, col);
+        pop(txt + " " + Math.round(ms) + "ms", 230, 140, col);
         beep(s >= 70 ? 880 : 300, 0.09, "triangle");
         phase = "flip"; anim = 0;
       },
@@ -1178,20 +1273,32 @@
   }
   function makeSqueeze(cfg) {
     const LIMIT = 8;
-    let taps, t, pulse, done;
+    let taps, times, t, pulse, done;
+    function finishSqueeze(timeout) {
+      done = true;
+      const iv = times.slice(1).map((x, i) => x - times[i]);
+      const span = times.length > 1 ? times[times.length - 1] - times[0] : 0;
+      const rate = span > 0 ? iv.length / span : 0;
+      const mean = iv.length ? iv.reduce((a, b) => a + b, 0) / iv.length : 0;
+      const cv = iv.length > 1 && mean > 0 ? Math.sqrt(iv.reduce((a, b) => a + (b - mean) ** 2, 0) / iv.length) / mean : 0;
+      const score = timeout ? taps / cfg.need * 30 : pw(rate, [[2, 30], [6, 100]]) * pw(cv, [[0.25, 1], [0.6, 0.85]]);
+      finish(Math.round(clamp(score, 0, 100)),
+        (timeout ? "시간 초과 " + taps + "/" + cfg.need + "번 · " : "") + "초당 " + rate.toFixed(1) + "회 · 리듬 " + Math.round(clamp(1 - cv, 0, 1) * 100) + "%");
+    }
     return {
       name: cfg.name, intro: cfg.intro,
-      init() { taps = 0; t = 0; pulse = 0; done = false; },
+      rule: "누르는 빠르기(첫 탭부터 마지막 탭까지)로 채점: 초당 6회 이상 100점, 초당 2회 30점 · 탭 간격이 들쭉날쭉하면(변동계수 0.25 초과) 최대 ×0.85",
+      init() { taps = 0; times = []; t = 0; pulse = 0; done = false; },
       update(dt) {
         t += dt; pulse = Math.max(0, pulse - dt * 6);
-        if (!done && t >= LIMIT) { done = true; finish(Math.round((taps / cfg.need) * 50)); }
+        if (!done && t >= LIMIT) finishSqueeze(true);
       },
       down() {
         if (done) return;
-        taps++; pulse = 1;
+        taps++; pulse = 1; times.push(performance.now() / 1000);
         beep(380 + taps * 25, 0.05, "triangle", 0.05);
         if (taps % 3 === 0 && taps < cfg.need) pop(["꾹!", "꼭꼭!", "조물조물!"][(taps / 3) % 3], 250, 90, "#d49a00");
-        if (taps >= cfg.need) { done = true; finish(t <= 4 ? 100 : Math.round(clamp(100 - (t - 4) * 12, 40, 100))); }
+        if (taps >= cfg.need) finishSqueeze(false);
       },
       draw() {
         rr(60, 120, 380, 230, 24); ctx.fillStyle = "#e2b07a"; ctx.fill();
@@ -1312,7 +1419,7 @@
         ctx.restore();
       }
       ctx.beginPath(); ctx.moveTo(190, 150); ctx.lineTo(320, 150); ctx.lineTo(300, 290); ctx.lineTo(210, 290); ctx.closePath(); ctx.fillStyle = "#e8463a"; ctx.fill();
-      ctx.fillStyle = "#ffffff"; ctx.font = '26px "Jua", system-ui, sans-serif'; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText("지원", 255, 220);
+      ctx.fillStyle = "#ffffff"; ctx.font = 'bold 26px "Gowun Batang", serif'; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText("지원", 255, 220);
       ctx.beginPath(); ctx.ellipse(370, 260, 36, 16, 0, 0, Math.PI * 2); ctx.fillStyle = "#ffffff"; ctx.fill(); ctx.strokeStyle = "#c6e2d7"; ctx.lineWidth = 2; ctx.stroke();
       ctx.beginPath(); ctx.ellipse(370, 258, 26, 10, 0, 0, Math.PI * 2); ctx.fillStyle = "#d8432f"; ctx.fill();
     },
@@ -1459,12 +1566,12 @@
   RECIPES.forEach(r => { r.blurb = r.steps().map(s => s.name).join(" · "); });
 
   // ================= flow =================
-  let recipe = null, steps = [], scene = null, running = false, cur = -1, results = [];
+  let recipe = null, steps = [], scene = null, running = false, cur = -1, results = [], details = [];
   const kitchen = { draw() { DISHES.rice(); } };
 
   function renderSteps() {
     stepsEl.innerHTML = steps.map((s, i) =>
-      '<li class="' + (results[i] != null ? "done" : i === cur ? "current" : "") + '">' + (i + 1) + "</li>"
+      '<li class="' + (results[i] != null ? "done" : i === cur ? "current" : "") + '" aria-label="' + (i + 1) + '단계">' + (i + 1) + "</li>"
     ).join("");
   }
   function show(html) { ov.innerHTML = html; ov.hidden = false; }
@@ -1484,7 +1591,7 @@
 
   let menuFilter = "전체", greeted = false;
   function menu() {
-    recipe = null; steps = []; results = []; cur = -1; scene = null; running = false;
+    recipe = null; steps = []; results = []; details = []; cur = -1; scene = null; running = false;
     renderSteps();
     recipeEl.textContent = "메뉴를 골라 주세요";
     say((greeted ? "" : "안녕하세요! 저는 지원이에요. ") + "오늘은 뭘 만들어 볼까요? 먹고 싶은 요리를 골라 주세요.", "happy");
@@ -1507,7 +1614,7 @@
   }
 
   function startRecipe(r) {
-    recipe = r; steps = r.steps(); results = []; cur = -1;
+    recipe = r; steps = r.steps(); results = []; details = []; cur = -1;
     recipeEl.textContent = "오늘의 요리 · " + r.name;
     intro(0);
   }
@@ -1516,25 +1623,27 @@
     cur = i; scene = steps[i]; scene.init(); running = false; renderSteps();
     say(scene.intro, "smile");
     show('<div class="card"><div class="eyebrow">' + recipe.name + " · " + (i + 1) + "단계</div><h2>" + scene.name + "</h2><p>" + scene.intro +
-      '</p><button id="btn-go" type="button">시작!</button></div>');
+      '</p><p class="rule">채점 기준 · ' + scene.rule + '</p><button id="btn-go" type="button">시작!</button></div>');
     on("btn-go", () => { hide(); running = true; });
   }
 
-  function finish(score) {
+  function finish(score, detail = "") {
     if (!running) return;
     running = false;
     results[cur] = score;
+    details[cur] = detail;
     renderSteps();
     const [txt] = judge(score);
-    const line = score >= 90 ? "완벽해요! 지원이도 깜짝 놀랐어요." :
-                 score >= 70 ? "아주 잘했어요! 이 정도면 셰프예요." :
+    const line = score >= 95 ? "완벽해요! 지원이도 깜짝 놀랐어요." :
+                 score >= 80 ? "아주 잘했어요! 이 정도면 셰프예요." :
+                 score >= 60 ? "좋아요! 조금만 더 다듬으면 완벽해요." :
                  score >= 40 ? "괜찮아요, 조금만 더 연습해 봐요." :
                                "걱정 마세요, 지원이가 살짝 도와줄게요!";
     say(line, score >= 40 ? "happy" : "oops");
     setTimeout(() => {
       const last = cur === steps.length - 1;
       show('<div class="card"><div class="eyebrow">' + scene.name + '</div><div class="big">' + score + '<small style="font-size:1.2rem">점</small></div><h2>' + txt +
-        '</h2><button id="btn-next" type="button">' + (last ? "완성 접시 보기" : "다음 단계") + "</button></div>");
+        '</h2>' + (detail ? '<p id="step-detail" class="detail">' + detail + '</p>' : "") + '<button id="btn-next" type="button">' + (last ? "완성 접시 보기" : "다음 단계") + "</button></div>");
       on("btn-next", () => { last ? result() : intro(cur + 1); });
     }, 700);
   }
@@ -1546,14 +1655,16 @@
     const prevBest = loadBest()[id];
     saveBest(id, total);
     const medal = total >= 90 ? ["금", "#ffcc4d", "금메달 셰프! 정말 맛있겠어요."] :
-                  total >= 70 ? ["은", "#d6e0dd", "은메달! 다음엔 금메달도 가능해요."] :
-                  total >= 50 ? ["동", "#e0a77a", "동메달! 맛있는 " + recipe.name + " 완성!"] :
+                  total >= 75 ? ["은", "#d6e0dd", "은메달! 다음엔 금메달도 가능해요."] :
+                  total >= 55 ? ["동", "#e0a77a", "동메달! 맛있는 " + recipe.name + " 완성!"] :
                                 ["참가", "#ffffff", "끝까지 완성했어요! 한 번 더 해 볼까요?"];
     const record = prevBest == null || total > prevBest;
-    say(medal[2] + (record ? " 최고 기록이에요!" : ""), total >= 50 ? "happy" : "smile");
+    const grade = total >= 95 ? "S" : total >= 85 ? "A" : total >= 70 ? "B" : total >= 50 ? "C" : "D";
+    say(medal[2] + (record ? " 최고 기록이에요!" : ""), total >= 55 ? "happy" : "smile");
     show('<div class="card"><div class="eyebrow">완성 · ' + recipe.name + '</div><div class="medal" style="background:' + medal[1] + '">' + medal[0] +
-      '</div><div class="big">' + total + '<small style="font-size:1.2rem">점</small></div><ul class="scores">' +
-      steps.map((s, i) => "<li><span>" + s.name + "</span><b>" + results[i] + "</b></li>").join("") +
+      '</div><div class="big">' + total + '<small style="font-size:1.2rem">점 · <span id="grade" class="grade">' + grade + '</span></small></div><ul class="scores">' +
+      steps.map((s, i) => "<li><span>" + s.name + (details[i] ? '<small>' + details[i] + "</small>" : "") +
+        "</span><b>" + results[i] + "</b></li>").join("") +
       '</ul><div class="btn-row"><button id="btn-again" type="button" class="ghost">다시 하기</button><button id="btn-menu" type="button">다른 요리</button></div></div>');
     on("btn-again", () => startRecipe(recipe));
     on("btn-menu", menu);
@@ -1591,7 +1702,7 @@
     last = now;
     ctx = mainCtx;
     ctx.setTransform(cv.width / W, 0, 0, cv.height / H, 0, 0);
-    ctx.fillStyle = "#f7fbf9"; ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = "#f1ead6"; ctx.fillRect(0, 0, W, H);
     const s = scene || kitchen;
     if (running && s.update) s.update(dt);
     s.draw();
